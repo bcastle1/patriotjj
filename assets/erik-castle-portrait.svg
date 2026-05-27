@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 820" role="img" aria-label="Erik Castle profile image">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="20%" r="80%">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.5" stop-color="#f1f5f9"/>
+      <stop offset="1" stop-color="#d9e2ef"/>
+    </radialGradient>
+    <linearGradient id="jacket" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#d71920"/>
+      <stop offset="1" stop-color="#071d49"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="26" stdDeviation="24" flood-color="#071d49" flood-opacity="0.24"/>
+    </filter>
+  </defs>
+  <rect width="720" height="820" fill="url(#bg)"/>
+  <circle cx="360" cy="238" r="124" fill="#edc29f" filter="url(#shadow)"/>
+  <path d="M245 224c18-85 72-136 135-136 70 0 117 49 130 131-70-20-151-19-265 5z" fill="#172033"/>
+  <path d="M218 503c44-84 106-126 142-126s99 42 142 126l54 210H164z" fill="url(#jacket)" filter="url(#shadow)"/>
+  <path d="M286 393l74 82 74-82v158H286z" fill="#ffffff"/>
+  <path d="M285 554h150" stroke="#d71920" stroke-width="22"/>
+  <circle cx="360" cy="615" r="74" fill="#ffffff"/>
+  <circle cx="360" cy="615" r="58" fill="#071d49"/>
+  <circle cx="360" cy="615" r="43" fill="#d71920"/>
+  <text x="360" y="632" text-anchor="middle" fill="#ffffff" font-family="Arial Black, Arial, sans-serif" font-size="44">EC</text>
+  <text x="360" y="760" text-anchor="middle" fill="#071d49" font-family="Arial Black, Arial, sans-serif" font-size="42">Erik Castle</text>
+  <text x="360" y="798" text-anchor="middle" fill="#5c6472" font-family="Arial, sans-serif" font-size="24" font-weight="700">Patriot Jiu Jitsu</text>
+</svg>

@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>American Heritage Patriots Jiu-Jitsu Camps</title>
+    <meta
+      name="description"
+      content="American Heritage Patriots Jiu-Jitsu summer camp signup, Venmo payment, team store, reviews, Q&A, and admin management app."
+    >
+    <link rel="icon" href="assets/ahs-patriots-mark.png">
+    <link rel="stylesheet" href="styles.css?v=20260526-branding">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+  </head>
+  <body>
+    <div class="app-shell" id="patriot-jj-app">
+      <header class="topbar" id="site-topbar">
+        <a class="brand" href="#home" aria-label="American Heritage Patriots Jiu-Jitsu home">
+          <span class="brand-mark" aria-hidden="true">
+            <img src="assets/ahs-patriots-mark.png" alt="">
+          </span>
+          <span>
+            <strong>American Heritage Patriots Jiu-Jitsu</strong>
+            <small>American Fork, Utah summer camps</small>
+          </span>
+        </a>
+        <nav class="main-nav" aria-label="Primary navigation">
+          <a href="#events"><i data-lucide="calendar-days"></i>Camps</a>
+          <a href="about.html"><i data-lucide="users-round"></i>About Us</a>
+          <a href="#signup"><i data-lucide="clipboard-pen-line"></i>Signup</a>
+          <a href="#store"><i data-lucide="shirt"></i>Store</a>
+          <a id="public-flyer-link" href="assets/patriot-jj-flyer.png" target="_blank" rel="noreferrer"><i data-lucide="file-image"></i>Flyer</a>
+          <a href="#qa"><i data-lucide="circle-help"></i>Q&amp;A</a>
+          <a href="#reviews"><i data-lucide="star"></i>Reviews</a>
+          <a href="#contact"><i data-lucide="mail"></i>Contact</a>
+          <a href="#admin"><i data-lucide="lock-keyhole"></i>Admin</a>
+        </nav>
+      </header>
+
+      <main>
+        <section class="hero" id="home">
+          <div class="hero-copy">
+            <p class="eyebrow">3-day summer camps at American Heritage Schools</p>
+            <h1>Hybrid martial arts for heart, might, mind, strength, and soul.</h1>
+            <p class="hero-lede">
+              Practical Jiu-Jitsu, self-defense, leadership, discipline, confidence,
+              bullying prevention, and situational awareness in a structured camp format.
+            </p>
+            <div class="hero-actions">
+              <a class="primary-button" href="#events">
+                <i data-lucide="calendar-check"></i>
+                View Camp Dates
+              </a>
+              <a class="secondary-button" href="#signup">
+                <i data-lucide="user-plus"></i>
+                Register Now
+              </a>
+              <a class="ghost-button" id="hero-email" href="mailto:info@patriotjj.com">
+                <i data-lucide="send"></i>
+                Email Questions
+              </a>
+            </div>
+            <div class="hero-stats" aria-label="Camp highlights">
+              <span><strong>1st-12th</strong>Grades</span>
+              <span><strong>3 days</strong>Per session</span>
+              <span><strong>Venmo</strong>Checkout</span>
+            </div>
+          </div>
+
+          <div class="hero-media" aria-label="American Heritage Patriots Jiu-Jitsu media">
+            <video class="hero-video" id="public-video" controls muted playsinline poster="assets/patriot-jj-flyer.png"></video>
+            <div class="flyer-backdrop" id="flyer-backdrop">
+              <img src="assets/patriot-jj-flyer.png" alt="American Heritage Patriots Jiu-Jitsu 3-day summer camps flyer">
+            </div>
+          </div>
+        </section>
+
+        <section class="ribbon" aria-label="Program focus areas">
+          <span>Hybrid Martial Arts</span>
+          <span>Student Wellness</span>
+          <span>Self-Defense</span>
+          <span>Leadership</span>
+        </section>
+
+        <section class="camp-gallery" aria-label="American Heritage Patriots Jiu-Jitsu camp photos">
+          <figure class="gallery-card large">
+            <img src="assets/jj-boys-grappling-v3-logo.jpg" alt="Two younger boys in red American Heritage Patriots Jiu-Jitsu shirts practicing safely in a mirrored mat room">
+            <figcaption>Boys drilling safe grappling fundamentals</figcaption>
+          </figure>
+          <figure class="gallery-card">
+            <img src="assets/jj-girls-grappling-v3-logo.jpg" alt="Two younger girls in red American Heritage Patriots Jiu-Jitsu shirts practicing safely in a mirrored mat room">
+            <figcaption>Girls learning control and confidence</figcaption>
+          </figure>
+          <figure class="gallery-card">
+            <img src="assets/jj-girl-punching-bag-v4-logo.jpg" alt="Young girl wearing gloves, headgear, and a red American Heritage Patriots Jiu-Jitsu shirt hitting a punching bag beside a mirror wall while a trainer watches">
+            <figcaption>Striking drills with supervision and safety gear</figcaption>
+          </figure>
+        </section>
+
+        <section class="section split-section" id="events">
+          <div>
+            <div class="section-heading">
+              <p class="eyebrow">Dates and schedule</p>
+              <h2>Pick a session and track.</h2>
+              <p>
+                Each session includes a camp T-shirt on the first day and certificate
+                awards on the last day. Select an event to prefill signup and payment.
+              </p>
+            </div>
+            <div class="event-list" id="event-list"></div>
+          </div>
+
+          <aside class="detail-panel" id="event-detail" aria-live="polite"></aside>
+        </section>
+
+        <section class="section learning-section">
+          <div class="section-heading">
+            <p class="eyebrow">What students learn</p>
+            <h2>Skills for the mat and life.</h2>
+          </div>
+          <div class="learning-grid">
+            <div><i data-lucide="badge-check"></i>Practical Jiu-Jitsu and self-defense</div>
+            <div><i data-lucide="badge-check"></i>Takedowns, sweeps, and control</div>
+            <div><i data-lucide="badge-check"></i>Mount, guard, and side control</div>
+            <div><i data-lucide="badge-check"></i>Situational awareness and safety</div>
+            <div><i data-lucide="badge-check"></i>De-escalation and conflict resolution</div>
+            <div><i data-lucide="badge-check"></i>Leadership and character development</div>
+            <div><i data-lucide="badge-check"></i>Confidence, discipline, and focus</div>
+            <div><i data-lucide="badge-check"></i>Faith, values, and integrity</div>
+          </div>
+        </section>
+
+        <section class="section venue-section" id="venue">
+          <div class="venue-copy">
+            <p class="eyebrow">Camp venue</p>
+            <h2>Hosted at American Heritage Schools, American Fork.</h2>
+            <p>
+              American Heritage Patriots Jiu-Jitsu camps are held in a school setting that fits the
+              program's emphasis on discipline, faith, values, wellness, leadership,
+              and practical self-defense.
+            </p>
+            <img class="ahs-logo" src="assets/ahs-logo-wide.png" alt="American Heritage School logo">
+          </div>
+          <figure class="venue-image">
+            <img src="assets/ahs-american-fork-campus.jpg" alt="American Heritage School American Fork campus">
+          </figure>
+        </section>
+
+        <section class="section form-section" id="signup">
+          <div class="section-heading">
+            <p class="eyebrow">Participant signup</p>
+            <h2>Register for camp.</h2>
+            <p>
+              Guardian information is required for minors. After submitting, the
+              app opens a Venmo checkout panel and stores the participant record
+              for admin review.
+            </p>
+          </div>
+
+          <form class="signup-form" id="signup-form">
+            <div class="form-grid two">
+              <label>First name<input name="firstName" autocomplete="given-name" required></label>
+              <label>Last name<input name="lastName" autocomplete="family-name" required></label>
+              <label>Age<input name="age" type="number" min="4" max="99" required></label>
+              <label>Gender
+                <select name="gender" required>
+                  <option value="">Select</option>
+                  <option>Female</option>
+                  <option>Male</option>
+                  <option>Prefer not to say</option>
+                </select>
+              </label>
+              <label class="full-field">Guardian name <span class="field-hint">(required if under 18)</span><input name="guardianName" autocomplete="name"></label>
+              <label class="full-field">Street address<input name="address" autocomplete="street-address" required></label>
+              <label>Email<input name="email" type="email" autocomplete="email" required></label>
+              <label>Phone<input name="phone" type="tel" autocomplete="tel" required></label>
+              <label>Camp session
+                <select name="eventId" id="signup-event" required></select>
+              </label>
+              <label>Grade group
+                <select name="trackId" id="signup-track" required></select>
+              </label>
+            </div>
+            <label>Medical, allergy, or learning notes
+              <textarea name="notes" rows="4" placeholder="Anything instructors should know"></textarea>
+            </label>
+            <section class="waiver-sign-block" aria-labelledby="waiver-sign-title">
+              <div class="section-heading tight">
+                <p class="eyebrow">Required waiver</p>
+                <h3 id="waiver-sign-title">Release and electronic signature</h3>
+                <p>
+                  Please read and sign before checkout. A signed copy can be printed
+                  after registration.
+                </p>
+              </div>
+              <div class="waiver-preview" id="signup-waiver-preview"></div>
+              <div class="form-grid two">
+                <label>Signer full legal name<input name="waiverSignerName" autocomplete="name" required></label>
+                <label>Relationship to participant
+                  <select name="waiverSignerRole" required>
+                    <option value="">Select</option>
+                    <option>Self</option>
+                    <option>Parent</option>
+                    <option>Legal guardian</option>
+                    <option>Other authorized adult</option>
+                  </select>
+                </label>
+              </div>
+              <label class="check-row">
+                <input name="waiverElectronicConsent" type="checkbox" required>
+                <span>I agree to use electronic records and signatures for this waiver and understand I can print or save a copy after signing.</span>
+              </label>
+              <label class="check-row">
+                <input name="waiverAgreement" type="checkbox" required>
+                <span>I have read the waiver, understand it, and voluntarily sign for myself or as the participant's parent/legal guardian.</span>
+              </label>
+              <label>Type your full name as your electronic signature<input name="waiverSignature" autocomplete="name" required></label>
+            </section>
+            <div class="form-footer">
+              <div class="price-preview" id="price-preview">$0 due</div>
+              <button class="primary-button" type="submit">
+                <i data-lucide="badge-dollar-sign"></i>
+                Sign Up and Pay
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <section class="section" id="store">
+          <div class="section-heading row-heading">
+            <div>
+              <p class="eyebrow">Team store</p>
+              <h2>Order camp gear.</h2>
+            </div>
+            <a class="ghost-button" href="#admin">
+              <i data-lucide="settings"></i>
+              Admin pricing
+            </a>
+          </div>
+          <div class="store-grid" id="store-grid"></div>
+          <form class="store-form" id="store-form">
+            <div class="form-grid five">
+              <label>Item<select name="itemId" id="store-item" required></select></label>
+              <label>Fit<select name="fit" required><option>Youth</option><option>Women</option><option>Men</option><option>Unisex</option></select></label>
+              <label>Size<select name="size" required><option>YS</option><option>YM</option><option>YL</option><option>AS</option><option>AM</option><option>AL</option><option>AXL</option></select></label>
+              <label>Quantity<input name="quantity" type="number" min="1" max="20" value="1" required></label>
+              <label>Email<input name="email" type="email" placeholder="receipt@email.com" required></label>
+            </div>
+            <button class="secondary-button" type="submit">
+              <i data-lucide="shopping-bag"></i>
+              Order with Venmo
+            </button>
+          </form>
+        </section>
+
+        <section class="section info-section">
+          <div class="qa-panel" id="qa">
+            <div class="section-heading">
+              <p class="eyebrow">Questions and answers</p>
+              <h2>Quick answers.</h2>
+            </div>
+            <div class="qa-list" id="qa-list"></div>
+          </div>
+
+          <div class="reviews-panel" id="reviews">
+            <div class="section-heading row-heading">
+              <div>
+                <p class="eyebrow">Reviews</p>
+                <h2>What families say.</h2>
+              </div>
+              <button class="ghost-button" type="button" id="open-review">
+                <i data-lucide="message-square-plus"></i>
+                Leave Review
+              </button>
+            </div>
+            <div class="review-list" id="review-list"></div>
+          </div>
+        </section>
+
+        <section class="section contact-section" id="contact">
+          <div>
+            <p class="eyebrow">Contact</p>
+            <h2>Questions before camp?</h2>
+            <p>
+              Send a note, visit the website, or include the session name in a Venmo
+              memo when paying.
+            </p>
+          </div>
+          <div class="contact-actions">
+            <a class="primary-button" id="contact-email" href="mailto:info@patriotjj.com">
+              <i data-lucide="mail"></i>
+              Send Email
+            </a>
+            <a class="secondary-button" id="contact-site" href="https://www.patriotjj.com" target="_blank" rel="noreferrer">
+              <i data-lucide="external-link"></i>
+              patriotjj.com
+            </a>
+            <a class="ghost-button" id="contact-venmo" href="https://venmo.com/bcastle1" target="_blank" rel="noreferrer">
+              <i data-lucide="badge-dollar-sign"></i>
+              Venmo @bcastle1
+            </a>
+          </div>
+        </section>
+
+        <section class="section admin-section" id="admin">
+          <div class="admin-login" id="admin-login">
+            <div>
+              <p class="eyebrow">Admin management</p>
+              <h2>Manager login.</h2>
+              <p>
+                Demo admin access is protected in the interface. A production embed
+                should connect this screen to server-side authentication.
+              </p>
+            </div>
+            <form id="admin-login-form" class="login-card">
+              <label>Password<input name="password" type="password" autocomplete="current-password" required></label>
+              <button class="primary-button" type="submit">
+                <i data-lucide="unlock-keyhole"></i>
+                Open Admin
+              </button>
+              <p class="form-note">Prototype password: patriot</p>
+            </form>
+          </div>
+
+          <div class="admin-app hidden" id="admin-app">
+            <div class="admin-header">
+              <div>
+                <p class="eyebrow">Private dashboard</p>
+                <h2>Camp operations.</h2>
+              </div>
+              <div class="button-row">
+                <button class="ghost-button" type="button" id="export-participants">
+                  <i data-lucide="download"></i>
+                  Export CSV
+                </button>
+                <button class="ghost-button" type="button" id="admin-logout">
+                  <i data-lucide="log-out"></i>
+                  Logout
+                </button>
+              </div>
+            </div>
+
+            <div class="metric-grid" id="admin-metrics"></div>
+
+            <div class="admin-tabs" role="tablist" aria-label="Admin tools">
+              <button class="tab-button active" type="button" data-admin-tab="participants"><i data-lucide="users"></i>Participants</button>
+              <button class="tab-button" type="button" data-admin-tab="payments"><i data-lucide="receipt"></i>Payments</button>
+              <button class="tab-button" type="button" data-admin-tab="events"><i data-lucide="calendar-plus"></i>Events</button>
+              <button class="tab-button" type="button" data-admin-tab="store"><i data-lucide="shirt"></i>Store</button>
+              <button class="tab-button" type="button" data-admin-tab="media"><i data-lucide="film"></i>Media</button>
+              <button class="tab-button" type="button" data-admin-tab="content"><i data-lucide="messages-square"></i>Content</button>
+            </div>
+
+            <div class="admin-panel active" data-panel="participants">
+              <div class="toolbar">
+                <label>Search<input id="participant-search" placeholder="Name, email, guardian, phone"></label>
+                <label>Age filter<select id="participant-age-filter"><option value="all">All ages</option><option value="minor">Under 18</option><option value="adult">18 and older</option></select></label>
+                <label>Session<select id="participant-event-filter"><option value="all">All sessions</option></select></label>
+                <label>Payment<select id="participant-payment-filter"><option value="all">All payment states</option><option value="paid">Paid</option><option value="pending">Pending</option></select></label>
+              </div>
+              <div class="admin-grid">
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Age</th>
+                        <th>Session</th>
+                        <th>Phone</th>
+                        <th>Payment</th>
+                        <th>Waiver</th>
+                      </tr>
+                    </thead>
+                    <tbody id="participants-table"></tbody>
+                  </table>
+                </div>
+                <aside class="participant-detail" id="participant-detail"></aside>
+              </div>
+            </div>
+
+            <div class="admin-panel" data-panel="payments">
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Name / order</th>
+                      <th>Memo</th>
+                      <th>Amount</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="payments-table"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="admin-panel" data-panel="events">
+              <div class="editor-grid" id="event-editor"></div>
+              <button class="secondary-button" type="button" id="add-event">
+                <i data-lucide="plus"></i>
+                Add Event
+              </button>
+            </div>
+
+            <div class="admin-panel" data-panel="store">
+              <div class="editor-grid" id="store-editor"></div>
+              <button class="secondary-button" type="button" id="add-store-item">
+                <i data-lucide="plus"></i>
+                Add Store Item
+              </button>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Item</th>
+                      <th>Fit / size</th>
+                      <th>Email</th>
+                      <th>Total</th>
+                    </tr>
+                  </thead>
+                  <tbody id="store-orders-table"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="admin-panel" data-panel="media">
+              <div class="media-grid">
+                <div class="workspace-card">
+                  <h3>Public video</h3>
+                  <label>Video URL<input id="hero-video-url" type="url" placeholder="https://.../camp-video.mp4"></label>
+                  <label class="file-button secondary-button">
+                    <i data-lucide="upload"></i>
+                    Upload Video
+                    <input id="video-upload" type="file" accept="video/*">
+                  </label>
+                  <label>Video title<input id="video-title" placeholder="American Heritage Patriots Jiu-Jitsu camp highlight"></label>
+                  <label>Caption<textarea id="video-caption" rows="3" placeholder="Short intro for the landing page"></textarea></label>
+                  <button class="primary-button" type="button" id="save-video-settings">
+                    <i data-lucide="save"></i>
+                    Save Public Video
+                  </button>
+                </div>
+
+                <div class="workspace-card">
+                  <h3>Create edit plan</h3>
+                  <label>Source clip<select id="edit-video-source"></select></label>
+                  <label>Music<select id="edit-music-source"></select></label>
+                  <label>On-screen title<input id="edit-title" value="American Heritage Patriots Jiu-Jitsu Summer Camp"></label>
+                  <button class="secondary-button" type="button" id="build-edit-plan">
+                    <i data-lucide="wand-sparkles"></i>
+                    Build Plan
+                  </button>
+                  <pre class="edit-plan" id="edit-plan"></pre>
+                </div>
+
+                <div class="workspace-card">
+                  <h3>Libraries</h3>
+                  <div class="library-actions">
+                    <label class="file-button ghost-button">
+                      <i data-lucide="image-plus"></i>
+                      Add Photos
+                      <input id="photo-upload" type="file" accept="image/*" multiple>
+                    </label>
+                    <label class="file-button ghost-button">
+                      <i data-lucide="music"></i>
+                      Add Music
+                      <input id="music-upload" type="file" accept="audio/*" multiple>
+                    </label>
+                  </div>
+                  <div class="library-list" id="media-library"></div>
+                </div>
+              </div>
+              <section class="flyer-admin">
+                <div class="section-heading row-heading">
+                  <div>
+                    <p class="eyebrow">Flyer and brochure library</p>
+                    <h2>Manage printable camp flyers.</h2>
+                    <p>
+                      Upload existing flyers, edit brochure copy, generate a new printable
+                      flyer, and choose which flyer appears on the public landing page.
+                    </p>
+                  </div>
+                  <button class="secondary-button" type="button" id="add-flyer">
+                    <i data-lucide="plus"></i>
+                    Add Flyer
+                  </button>
+                </div>
+                <div class="flyer-library" id="flyer-library"></div>
+                <div class="flyer-editor-grid" id="flyer-editor"></div>
+              </section>
+              <div class="song-grid" id="song-grid"></div>
+            </div>
+
+            <div class="admin-panel" data-panel="content">
+              <div class="content-editor">
+                <form id="settings-form" class="workspace-card">
+                  <h3>Contact and payment settings</h3>
+                  <label>Contact email<input name="email" type="email"></label>
+                  <label>Phone<input name="phone" type="tel"></label>
+                  <label>Website<input name="website" type="url"></label>
+                  <label>Venmo handle<input name="venmo"></label>
+                  <button class="primary-button" type="submit">
+                    <i data-lucide="save"></i>
+                    Save Settings
+                  </button>
+                </form>
+                <form id="waiver-template-form" class="workspace-card wide-card">
+                  <h3>Waiver template</h3>
+                  <p class="form-note">
+                    Applies to future signups. Signed waivers keep their original text.
+                    Use tokens: {participantName}, {signerName}, {eventTitle}, {trackLabel}, {signedDate}.
+                  </p>
+                  <label>Waiver title<input name="title"></label>
+                  <label>Waiver body<textarea name="body" rows="12"></textarea></label>
+                  <button class="primary-button" type="submit">
+                    <i data-lucide="save"></i>
+                    Save Waiver Template
+                  </button>
+                </form>
+                <div class="workspace-card">
+                  <h3>Q&amp;A</h3>
+                  <div id="faq-editor"></div>
+                  <button class="secondary-button" type="button" id="add-faq">
+                    <i data-lucide="plus"></i>
+                    Add Q&amp;A
+                  </button>
+                </div>
+                <div class="workspace-card">
+                  <h3>Reviews</h3>
+                  <div id="review-editor"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <dialog class="modal" id="payment-modal">
+      <form method="dialog" class="modal-card" id="payment-form">
+        <button class="icon-close" type="button" data-close-modal aria-label="Close">x</button>
+        <div class="section-heading tight">
+          <p class="eyebrow">Venmo checkout</p>
+          <h2 id="payment-title">Complete payment.</h2>
+        </div>
+        <div class="receipt-card" id="payment-summary"></div>
+        <div class="modal-actions">
+          <a class="primary-button" id="venmo-pay-link" href="https://venmo.com/bcastle1" target="_blank" rel="noreferrer">
+            <i data-lucide="badge-dollar-sign"></i>
+            Pay with Venmo
+          </a>
+          <button class="secondary-button" type="button" id="record-payment">
+            <i data-lucide="check-circle-2"></i>
+            Record Payment
+          </button>
+          <button class="ghost-button hidden" type="button" id="print-current-waiver">
+            <i data-lucide="printer"></i>
+            Print Waiver
+          </button>
+        </div>
+        <p class="form-note">
+          Prototype note: production Venmo reconciliation should use a backend payment
+          workflow or manual admin verification before final receipt delivery.
+        </p>
+      </form>
+    </dialog>
+
+    <dialog class="modal waiver-modal" id="waiver-modal">
+      <form method="dialog" class="modal-card" id="waiver-view-form">
+        <button class="icon-close" type="button" data-close-modal aria-label="Close">x</button>
+        <div class="section-heading tight">
+          <p class="eyebrow">Signed waiver</p>
+          <h2 id="waiver-modal-title">Participant waiver</h2>
+        </div>
+        <article class="signed-waiver" id="waiver-modal-content"></article>
+        <div class="modal-actions">
+          <button class="primary-button" type="button" id="print-waiver">
+            <i data-lucide="printer"></i>
+            Print Signed Waiver
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="modal" id="review-modal">
+      <form method="dialog" class="modal-card" id="review-form">
+        <button class="icon-close" type="button" data-close-modal aria-label="Close">x</button>
+        <div class="section-heading tight">
+          <p class="eyebrow">Leave a review</p>
+          <h2>Share feedback.</h2>
+        </div>
+        <div class="form-grid two">
+          <label>Name<input name="name" required></label>
+          <label>Rating<select name="rating" required><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select></label>
+        </div>
+        <label>Review<textarea name="quote" rows="5" required></textarea></label>
+        <button class="primary-button" type="submit">
+          <i data-lucide="star"></i>
+          Submit Review
+        </button>
+      </form>
+    </dialog>
+
+    <div class="toast" id="toast" role="status"></div>
+    <script src="app.js?v=20260526-branding"></script>
+  </body>
+</html>
