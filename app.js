@@ -2,6 +2,7 @@ const APP_KEY = "patriotJjCampApp.v1";
 const ADMIN_PASSWORD = "patriot";
 const PROGRAM_NAME = "Patriots Jiu-jitsu";
 const FLYER_TITLE = "Patriots Jiu-jitsu";
+const PUBLIC_FLYER_IMAGE = "assets/patriot-jj-flyer.png?v=20260530-patriots";
 const STORE_MARK_TEXT = "AHS";
 const STORE_ITEM_TEXT = "Patriots Jiu-jitsu";
 const OLD_PROGRAM_NAMES = [
@@ -165,6 +166,7 @@ function seedState() {
         phone: "(801) 555-0147",
         eventId: "session-1",
         trackId: "youth",
+        shirtSize: "Youth L",
         notes: "Beginner. Excited about self-defense.",
         signedUpAt: "2026-05-26T09:30:00.000Z"
       },
@@ -180,6 +182,7 @@ function seedState() {
         phone: "(385) 555-0192",
         eventId: "both-sessions",
         trackId: "teen",
+        shirtSize: "Adult M",
         notes: "Wrestling background.",
         signedUpAt: "2026-05-26T10:00:00.000Z"
       }
@@ -318,13 +321,13 @@ function seedState() {
       { id: "song-20", title: "Patriot Finish", mood: "Big ending", bpm: 108, active: true }
     ],
     media: {
-      photos: [{ id: "photo-flyer", name: `${PROGRAM_NAME} flyer`, url: "assets/patriot-jj-flyer.png", type: "image/png", bundled: true }],
+      photos: [{ id: "photo-flyer", name: `${PROGRAM_NAME} flyer`, url: PUBLIC_FLYER_IMAGE, type: "image/png", bundled: true }],
       flyers: [
         {
           id: "flyer-original",
           name: `Original ${PROGRAM_NAME} Summer Camp Flyer`,
           type: "flyer",
-          imageUrl: "assets/patriot-jj-flyer.png",
+          imageUrl: PUBLIC_FLYER_IMAGE,
           imageSource: "Uploaded original flyer",
           active: true,
           title: FLYER_TITLE,
@@ -454,14 +457,21 @@ function normalizeFlyer(item) {
   normalized.title = replaceProgramBrand(normalized.title);
   normalized.subtitle = replaceProgramBrand(normalized.subtitle);
   normalized.footer = replaceProgramBrand(normalized.footer);
+  if (normalized.imageUrl === "assets/patriot-jj-flyer.png") {
+    normalized.imageUrl = PUBLIC_FLYER_IMAGE;
+  }
   return normalized;
 }
 
 function normalizeMediaItem(item) {
-  return {
+  const normalized = {
     ...item,
     name: replaceProgramBrand(item?.name)
   };
+  if (normalized.url === "assets/patriot-jj-flyer.png") {
+    normalized.url = PUBLIC_FLYER_IMAGE;
+  }
+  return normalized;
 }
 
 function replaceProgramBrand(value) {
@@ -749,6 +759,7 @@ function handleSignup(event) {
     phone: clean(formData.get("phone")),
     eventId: clean(formData.get("eventId")),
     trackId: clean(formData.get("trackId")),
+    shirtSize: clean(formData.get("shirtSize")),
     notes: clean(formData.get("notes")),
     signedUpAt: new Date().toISOString()
   };
@@ -1000,7 +1011,8 @@ function renderParticipants() {
       participant.email,
       participant.phone,
       participant.guardianName,
-      participant.address
+      participant.address,
+      participant.shirtSize
     ].join(" ").toLowerCase();
     const paymentState = participantPaymentState(participant.id);
     return (
@@ -1020,6 +1032,7 @@ function renderParticipants() {
           <td><strong>${escapeHtml(fullName(participant))}</strong><br>${escapeHtml(participant.email)}</td>
           <td>${Number(participant.age || 0)}</td>
           <td>${escapeHtml(event?.title || "Unknown")}<br>${escapeHtml(trackLabel(participant.eventId, participant.trackId))}</td>
+          <td>${escapeHtml(participant.shirtSize || "N/A")}</td>
           <td>${escapeHtml(participant.phone)}</td>
           <td><span class="status-pill ${paymentState}">${paymentState}</span></td>
           <td>
@@ -1032,7 +1045,7 @@ function renderParticipants() {
         </tr>
       `;
     })
-    .join("") || `<tr><td colspan="6">No participants match the current filters.</td></tr>`;
+    .join("") || `<tr><td colspan="7">No participants match the current filters.</td></tr>`;
 
   if (!state.participants.some((participant) => participant.id === selectedParticipantId)) {
     selectedParticipantId = state.participants[0]?.id || "";
@@ -1060,6 +1073,7 @@ function renderParticipantDetail() {
       <div><dt>Email</dt><dd>${escapeHtml(participant.email)}</dd></div>
       <div><dt>Session</dt><dd>${escapeHtml(eventTitle(participant.eventId))}</dd></div>
       <div><dt>Track</dt><dd>${escapeHtml(trackLabel(participant.eventId, participant.trackId))}</dd></div>
+      <div><dt>Camp T-shirt</dt><dd>${escapeHtml(participant.shirtSize || "N/A")}</dd></div>
       <div><dt>Waiver</dt><dd>${participant.waiver ? `Signed ${formatDateTime(participant.waiver.signedAt)}` : "Not on file"}</dd></div>
     </dl>
     <h3>Payment history</h3>
@@ -2112,7 +2126,7 @@ function switchAdminTab(tabName) {
 
 function exportParticipantsCsv() {
   const rows = [
-    ["First Name", "Last Name", "Age", "Gender", "Guardian", "Address", "Email", "Phone", "Session", "Track", "Signed Up", "Payment", "Waiver Signed", "Waiver Signer"],
+    ["First Name", "Last Name", "Age", "Gender", "Guardian", "Address", "Email", "Phone", "Session", "Track", "Camp T-shirt Size", "Signed Up", "Payment", "Waiver Signed", "Waiver Signer"],
     ...state.participants.map((participant) => [
       participant.firstName,
       participant.lastName,
@@ -2124,6 +2138,7 @@ function exportParticipantsCsv() {
       participant.phone,
       eventTitle(participant.eventId),
       trackLabel(participant.eventId, participant.trackId),
+      participant.shirtSize || "",
       formatDateTime(participant.signedUpAt),
       participantPaymentState(participant.id),
       participant.waiver?.signedAt ? formatDateTime(participant.waiver.signedAt) : "",
@@ -2236,7 +2251,7 @@ function receiptMailto(participant) {
     .reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
   const subject = encodeURIComponent(`${PROGRAM_NAME} receipt`);
   const body = encodeURIComponent(
-    `Hi ${fullName(participant)},\n\nThank you for registering for ${eventTitle(participant.eventId)}.\nPayment recorded: $${paidTotal.toFixed(2)}.\n\n${PROGRAM_NAME}`
+    `Hi ${fullName(participant)},\n\nThank you for registering for ${eventTitle(participant.eventId)}.\nCamp T-shirt size: ${participant.shirtSize || "N/A"}.\nPayment recorded: $${paidTotal.toFixed(2)}.\n\n${PROGRAM_NAME}`
   );
   return `mailto:${participant.email}?subject=${subject}&body=${body}`;
 }

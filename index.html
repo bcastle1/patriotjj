@@ -9,7 +9,7 @@
       content="Patriots Jiu-jitsu summer camp signup, Venmo payment, team store, reviews, Q&A, and admin management app."
     >
     <link rel="icon" type="image/svg+xml" href="assets/ahs-patriots-mark-crisp.svg">
-    <link rel="stylesheet" href="styles.css?v=20260530-no-blank-sections">
+    <link rel="stylesheet" href="styles.css?v=20260530-flyer-signup">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
   </head>
   <body>
@@ -29,7 +29,7 @@
           <a href="about.html"><i data-lucide="users-round"></i>About Us</a>
           <a href="#signup"><i data-lucide="clipboard-pen-line"></i>Signup</a>
           <a href="#store"><i data-lucide="shirt"></i>Store</a>
-          <a id="public-flyer-link" href="assets/patriot-jj-flyer.png" target="_blank" rel="noreferrer"><i data-lucide="file-image"></i>Flyer</a>
+          <a id="public-flyer-link" href="assets/patriot-jj-flyer.png?v=20260530-patriots" target="_blank" rel="noreferrer"><i data-lucide="file-image"></i>Flyer</a>
           <a href="#qa"><i data-lucide="circle-help"></i>Q&amp;A</a>
           <a href="#reviews"><i data-lucide="star"></i>Reviews</a>
           <a href="#contact"><i data-lucide="mail"></i>Contact</a>
@@ -53,7 +53,7 @@
               </a>
               <a class="secondary-button" href="#signup">
                 <i data-lucide="user-plus"></i>
-                Register Now
+                SIGNUP NOW
               </a>
               <a class="ghost-button" id="hero-email" href="mailto:info@patriotjj.com">
                 <i data-lucide="send"></i>
@@ -68,9 +68,13 @@
           </div>
 
           <div class="hero-media" aria-label="Patriots Jiu-jitsu media">
-            <video class="hero-video" id="public-video" controls muted playsinline poster="assets/patriot-jj-flyer.png"></video>
+            <video class="hero-video" id="public-video" controls muted playsinline poster="assets/patriot-jj-flyer.png?v=20260530-patriots"></video>
             <div class="flyer-backdrop" id="flyer-backdrop">
-              <img src="assets/patriot-jj-flyer.png" alt="Patriots Jiu-jitsu 3-day summer camps flyer">
+              <img src="assets/patriot-jj-flyer.png?v=20260530-patriots" alt="Patriots Jiu-jitsu 3-day summer camps flyer">
+              <div class="flyer-link-stack" aria-label="Flyer signup links">
+                <a href="#signup">Sign Up Now</a>
+                <a href="#waiver-form">Waiver Form</a>
+              </div>
             </div>
           </div>
         </section>
@@ -180,11 +184,30 @@
               <label>Grade group
                 <select name="trackId" id="signup-track" required></select>
               </label>
+              <label>Camp T-shirt size
+                <select name="shirtSize" required>
+                  <option value="">Select</option>
+                  <option>Youth XS</option>
+                  <option>Youth S</option>
+                  <option>Youth M</option>
+                  <option>Youth L</option>
+                  <option>Youth XL</option>
+                  <option>Adult XS</option>
+                  <option>Adult S</option>
+                  <option>Adult M</option>
+                  <option>Adult L</option>
+                  <option>Adult XL</option>
+                  <option>Adult 2XL</option>
+                  <option>Adult 3XL</option>
+                  <option>Adult 4XL</option>
+                  <option>Adult 5XL</option>
+                </select>
+              </label>
             </div>
             <label>Medical, allergy, or learning notes
               <textarea name="notes" rows="4" placeholder="Anything instructors should know"></textarea>
             </label>
-            <section class="waiver-sign-block" aria-labelledby="waiver-sign-title">
+            <section class="waiver-sign-block" id="waiver-form" aria-labelledby="waiver-sign-title">
               <div class="section-heading tight">
                 <p class="eyebrow">Required waiver</p>
                 <h3 id="waiver-sign-title">Release and electronic signature</h3>
@@ -356,7 +379,7 @@
 
             <div class="admin-panel active" data-panel="participants">
               <div class="toolbar">
-                <label>Search<input id="participant-search" placeholder="Name, email, guardian, phone"></label>
+                <label>Search<input id="participant-search" placeholder="Name, email, guardian, phone, shirt size"></label>
                 <label>Age filter<select id="participant-age-filter"><option value="all">All ages</option><option value="minor">Under 18</option><option value="adult">18 and older</option></select></label>
                 <label>Session<select id="participant-event-filter"><option value="all">All sessions</option></select></label>
                 <label>Payment<select id="participant-payment-filter"><option value="all">All payment states</option><option value="paid">Paid</option><option value="pending">Pending</option></select></label>
@@ -369,6 +392,7 @@
                         <th>Name</th>
                         <th>Age</th>
                         <th>Session</th>
+                        <th>T-shirt</th>
                         <th>Phone</th>
                         <th>Payment</th>
                         <th>Waiver</th>
@@ -607,6 +631,6 @@
     </dialog>
 
     <div class="toast" id="toast" role="status"></div>
-    <script src="app.js?v=20260530-event-card"></script>
+    <script src="app.js?v=20260530-flyer-signup"></script>
   </body>
 </html>

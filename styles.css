@@ -368,6 +368,41 @@ a svg,
   object-position: top center;
 }
 
+.flyer-link-stack {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(12px, 2vw, 22px);
+  z-index: 3;
+  display: grid;
+  gap: 7px;
+  width: min(220px, 52%);
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+.flyer-link-stack a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 7px 14px;
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+  color: #ffffff;
+  background: var(--red);
+  box-shadow: 0 5px 14px rgba(7, 29, 73, 0.24);
+  font-size: 0.84rem;
+  font-weight: 950;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.flyer-link-stack a:last-child {
+  color: var(--navy);
+  background: #ffffff;
+  border-color: var(--navy);
+}
+
 .about-hero {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(320px, 0.56fr);
