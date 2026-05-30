@@ -442,7 +442,11 @@ a svg,
 }
 
 .gallery-card.has-embedded-caption img {
+  object-fit: contain;
   object-position: center bottom;
+  background:
+    linear-gradient(180deg, rgba(21, 27, 80, 0.12), rgba(21, 27, 80, 0.22)),
+    var(--navy);
 }
 
 .gallery-card figcaption {
@@ -2297,4 +2301,24 @@ th {
   h1 {
     font-size: 2rem;
   }
+}
+
+/* Match embedded-caption cards to the source image ratios so captions stay visible without excess padding. */
+.camp-gallery {
+  align-items: start;
+}
+
+.gallery-card.has-embedded-caption {
+  min-height: 0;
+  aspect-ratio: 1.03 / 1;
+}
+
+.gallery-card.large.has-embedded-caption {
+  min-height: 0;
+  aspect-ratio: 1.754 / 1;
+}
+
+.gallery-card.has-embedded-caption img {
+  object-fit: contain;
+  object-position: center bottom;
 }
