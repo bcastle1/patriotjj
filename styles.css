@@ -1729,7 +1729,7 @@ body {
   color: rgba(255, 255, 255, 0.74);
   font-size: 0.78rem;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -1743,7 +1743,7 @@ body {
   color: #ffffff;
   font-size: 0.78rem;
   font-weight: 950;
-  letter-spacing: 0.02em;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -1792,7 +1792,7 @@ main {
   font-family: Impact, "Arial Black", "Arial Narrow", Arial, sans-serif;
   font-size: clamp(3rem, 8.4vw, 7.8rem);
   line-height: 0.86;
-  letter-spacing: 0.03em;
+  letter-spacing: 0;
   opacity: 0.34;
   text-transform: uppercase;
   -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.86);
@@ -1824,7 +1824,7 @@ main {
   font-family: Impact, "Arial Black", "Arial Narrow", Arial, sans-serif;
   font-size: 0.84rem;
   font-weight: 900;
-  letter-spacing: 0.05em;
+  letter-spacing: 0;
 }
 
 .hero .eyebrow {
@@ -1837,7 +1837,7 @@ h2,
 h3 {
   font-family: Impact, "Arial Black", "Arial Narrow", Arial, sans-serif;
   font-weight: 900;
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -1872,7 +1872,7 @@ h3 {
   padding: 10px 18px;
   font-family: Impact, "Arial Black", "Arial Narrow", Arial, sans-serif;
   font-weight: 900;
-  letter-spacing: 0.02em;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -1991,7 +1991,7 @@ h3 {
   background: var(--navy);
   font-family: Impact, "Arial Black", "Arial Narrow", Arial, sans-serif;
   font-size: clamp(1rem, 1.6vw, 1.45rem);
-  letter-spacing: 0.02em;
+  letter-spacing: 0;
 }
 
 .camp-gallery {
@@ -2187,5 +2187,114 @@ th {
 
   .hero-media {
     min-height: 260px;
+  }
+}
+
+/* Readability pass: use wider, lighter lettering where the athletic font crowded words. */
+.brand strong,
+.brand small,
+.main-nav a,
+.hero::before,
+.eyebrow,
+h1,
+h2,
+h3,
+.primary-button,
+.secondary-button,
+.ghost-button,
+.danger-button,
+.tab-button,
+.hero-stats strong,
+.ribbon span {
+  font-family: Roboto, Arial, Helvetica, sans-serif;
+  letter-spacing: 0;
+}
+
+.brand strong {
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.brand small {
+  font-weight: 700;
+}
+
+.main-nav a {
+  font-weight: 760;
+}
+
+.hero::before {
+  font-weight: 800;
+  line-height: 1.02;
+  opacity: 0.22;
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.74);
+}
+
+.eyebrow {
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+h1 {
+  max-width: 940px;
+  font-size: clamp(2.15rem, 4.2vw, 4.35rem);
+  font-weight: 800;
+  line-height: 1.03;
+}
+
+h2 {
+  font-size: clamp(1.6rem, 2.7vw, 2.7rem);
+  font-weight: 800;
+  line-height: 1.08;
+}
+
+h3 {
+  font-weight: 780;
+  line-height: 1.18;
+}
+
+.primary-button,
+.secondary-button,
+.ghost-button,
+.danger-button,
+.tab-button {
+  font-weight: 800;
+}
+
+.hero-stats strong {
+  font-weight: 800;
+  line-height: 1.14;
+}
+
+.ribbon span {
+  font-size: clamp(0.96rem, 1.35vw, 1.18rem);
+  font-weight: 800;
+  line-height: 1.18;
+}
+
+.learning-grid div,
+label,
+.event-card,
+.store-card,
+.qa-question,
+.review-card,
+.detail-list dd,
+.store-design span,
+.price-preview,
+th {
+  font-weight: 780;
+}
+
+@media (max-width: 760px) {
+  h1 {
+    font-size: clamp(2rem, 8.5vw, 3.05rem);
+    line-height: 1.05;
+  }
+}
+
+@media (max-width: 460px) {
+  h1 {
+    font-size: 2rem;
   }
 }
