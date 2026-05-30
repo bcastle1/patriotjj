@@ -2353,3 +2353,27 @@ th {
   justify-self: end;
   white-space: nowrap;
 }
+
+/* Keep the section accent from becoming a grid/flex item and creating empty cells. */
+.section {
+  position: relative;
+  padding-top: clamp(42px, 5vw, 64px);
+}
+
+.section::before {
+  position: absolute;
+  top: clamp(22px, 3vw, 30px);
+  left: clamp(24px, 4vw, 44px);
+  margin: 0;
+}
+
+@media (max-width: 760px) {
+  .section {
+    padding: 38px 18px 18px;
+  }
+
+  .section::before {
+    top: 18px;
+    left: 18px;
+  }
+}
