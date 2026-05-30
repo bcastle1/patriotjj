@@ -1,9 +1,15 @@
 const APP_KEY = "patriotJjCampApp.v1";
 const ADMIN_PASSWORD = "patriot";
-const PROGRAM_NAME = "American Heritage Patriots Jiu-Jitsu";
-const FLYER_TITLE = "AHS Patriots Jiu-Jitsu";
+const PROGRAM_NAME = "Patriots Jiu-jitsu";
+const FLYER_TITLE = "Patriots Jiu-jitsu";
 const STORE_MARK_TEXT = "AHS";
-const STORE_ITEM_TEXT = "American Heritage Patriots Jiu-Jitsu";
+const STORE_ITEM_TEXT = "Patriots Jiu-jitsu";
+const OLD_PROGRAM_NAMES = [
+  "American Heritage Patriots Jiu-Jitsu",
+  "American Heritage Patriots Jiu-jitsu",
+  "AHS Patriots Jiu-Jitsu",
+  "Patriot Jiu Jitsu"
+];
 
 const $ = (selector, scope = document) => scope.querySelector(selector);
 const $$ = (selector, scope = document) => Array.from(scope.querySelectorAll(selector));
@@ -209,7 +215,7 @@ function seedState() {
         category: "Shirt",
         price: 22,
         active: true,
-        description: "American Heritage Patriots Jiu-Jitsu navy camp shirt.",
+        description: "Patriots Jiu-jitsu navy camp shirt.",
         productColor: "#071d49",
         logoText: STORE_MARK_TEXT,
         slogan: STORE_ITEM_TEXT,
@@ -248,7 +254,7 @@ function seedState() {
         category: "Accessory",
         price: 24,
         active: true,
-        description: "Structured cap with American Heritage Patriots Jiu-Jitsu mark.",
+        description: "Structured cap with Patriots Jiu-jitsu mark.",
         productColor: "#071d49",
         logoText: STORE_MARK_TEXT,
         slogan: "American Fork Patriots",
@@ -359,10 +365,10 @@ function mergeState(base, incoming) {
     storeItems: (incoming.storeItems || base.storeItems).map(normalizeStoreItem),
     faqs: mergeDefaultRows(base.faqs, incoming.faqs),
     media: {
-      photos: incoming.media?.photos || base.media.photos,
+      photos: (incoming.media?.photos || base.media.photos).map(normalizeMediaItem),
       flyers: (incoming.media?.flyers || base.media.flyers).map(normalizeFlyer),
-      videos: incoming.media?.videos || base.media.videos,
-      music: incoming.media?.music || base.media.music
+      videos: (incoming.media?.videos || base.media.videos).map(normalizeMediaItem),
+      music: (incoming.media?.music || base.media.music).map(normalizeMediaItem)
     }
   };
 }
@@ -387,6 +393,9 @@ function normalizeSettings(settings) {
   if (typeof normalized.waiverBody === "string") {
     normalized.waiverBody = normalized.waiverBody.replaceAll("Patriot Jiu Jitsu", PROGRAM_NAME);
   }
+  normalized.publicVideoTitle = replaceProgramBrand(normalized.publicVideoTitle);
+  normalized.waiverTitle = replaceProgramBrand(normalized.waiverTitle);
+  normalized.waiverBody = replaceProgramBrand(normalized.waiverBody);
   return normalized;
 }
 
@@ -410,11 +419,13 @@ function normalizeStoreItem(item) {
     normalized.slogan = normalized.id === "hat" ? "American Fork Patriots" : STORE_ITEM_TEXT;
   }
   if (normalized.description === "Patriot JJ navy camp shirt.") {
-    normalized.description = "American Heritage Patriots Jiu-Jitsu navy camp shirt.";
+    normalized.description = "Patriots Jiu-jitsu navy camp shirt.";
   }
   if (normalized.description === "Structured cap with Patriot JJ shield.") {
-    normalized.description = "Structured cap with American Heritage Patriots Jiu-Jitsu mark.";
+    normalized.description = "Structured cap with Patriots Jiu-jitsu mark.";
   }
+  normalized.description = replaceProgramBrand(normalized.description);
+  normalized.slogan = replaceProgramBrand(normalized.slogan);
   return normalized;
 }
 
@@ -439,7 +450,23 @@ function normalizeFlyer(item) {
   if (typeof normalized.bullets === "string") {
     normalized.bullets = normalized.bullets.split("\n").map((line) => line.trim()).filter(Boolean);
   }
+  normalized.name = replaceProgramBrand(normalized.name);
+  normalized.title = replaceProgramBrand(normalized.title);
+  normalized.subtitle = replaceProgramBrand(normalized.subtitle);
+  normalized.footer = replaceProgramBrand(normalized.footer);
   return normalized;
+}
+
+function normalizeMediaItem(item) {
+  return {
+    ...item,
+    name: replaceProgramBrand(item?.name)
+  };
+}
+
+function replaceProgramBrand(value) {
+  if (typeof value !== "string") return value;
+  return OLD_PROGRAM_NAMES.reduce((text, oldName) => text.replaceAll(oldName, PROGRAM_NAME), value);
 }
 
 function saveState() {
