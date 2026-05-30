@@ -611,8 +611,10 @@ function renderEvents() {
   }
 
   refs.eventList.innerHTML = activeEvents
-    .map((event) => `
-      <button class="event-card ${event.id === selectedEventId ? "active" : ""}" type="button" data-event-id="${event.id}">
+    .map((event) => {
+      const isWideEvent = event.id === "both-sessions" || /both sessions/i.test(event.title);
+      return `
+      <button class="event-card ${isWideEvent ? "wide-card" : ""} ${event.id === selectedEventId ? "active" : ""}" type="button" data-event-id="${event.id}">
         <span class="event-date"><i data-lucide="calendar"></i>${escapeHtml(event.dateLine)}</span>
         <h3>${escapeHtml(event.title)}</h3>
         <p>${escapeHtml(event.description)}</p>
@@ -623,7 +625,8 @@ function renderEvents() {
           </div>
         `).join("")}
       </button>
-    `)
+    `;
+    })
     .join("");
   refreshIcons();
 }

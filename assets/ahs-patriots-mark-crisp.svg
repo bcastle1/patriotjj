@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">Patriots Jiu-Jitsu crisp logo mark</title>
+  <desc id="desc">Transparent Patriots mark with red circular border, navy center, white Patriot silhouette, white swooshes, and crisp five-point stars.</desc>
+  <defs>
+    <clipPath id="outer-clip">
+      <circle cx="512" cy="512" r="466"/>
+    </clipPath>
+    <symbol id="star" viewBox="-50 -50 100 100">
+      <polygon points="0,-48 10.8,-14.9 45.7,-14.9 17.4,5.7 28.3,38.8 0,18.3 -28.3,38.8 -17.4,5.7 -45.7,-14.9 -10.8,-14.9"/>
+    </symbol>
+  </defs>
+
+  <g clip-path="url(#outer-clip)">
+    <circle cx="512" cy="512" r="466" fill="#BE1E2D"/>
+    <circle cx="512" cy="512" r="336" fill="#061A2D"/>
+
+    <use href="#star" x="484" y="76" width="56" height="56" fill="#F7F0DF"/>
+    <use href="#star" x="686" y="130" width="56" height="56" fill="#F7F0DF"/>
+    <use href="#star" x="835" y="279" width="56" height="56" fill="#F7F0DF"/>
+    <use href="#star" x="889" y="484" width="56" height="56" fill="#F7F0DF"/>
+    <use href="#star" x="835" y="686" width="56" height="56" fill="#F7F0DF"/>
+    <use href="#star" x="686" y="835" width="56" height="56" fill="#F7F0DF"/>
+    <use href="#star" x="484" y="889" width="56" height="56" fill="#F7F0DF"/>
+    <use href="#star" x="279" y="835" width="56" height="56" fill="#F7F0DF"/>
+    <use href="#star" x="130" y="686" width="56" height="56" fill="#F7F0DF"/>
+    <use href="#star" x="76" y="484" width="56" height="56" fill="#F7F0DF"/>
+    <use href="#star" x="130" y="279" width="56" height="56" fill="#F7F0DF"/>
+    <use href="#star" x="279" y="130" width="56" height="56" fill="#F7F0DF"/>
+
+    <path d="M190 364 C275 224 432 156 604 174 C748 189 858 276 915 395" fill="none" stroke="#F7F0DF" stroke-width="32" stroke-linecap="round"/>
+    <path d="M170 646 C247 818 429 898 620 852 C730 825 818 761 875 664" fill="none" stroke="#F7F0DF" stroke-width="32" stroke-linecap="round"/>
+    <path d="M153 360 C246 361 352 394 452 456" fill="none" stroke="#F7F0DF" stroke-width="24" stroke-linecap="round"/>
+    <path d="M163 386 C244 392 333 421 414 468" fill="none" stroke="#061A2D" stroke-width="28" stroke-linecap="round"/>
+
+    <path d="M196 430 L255 456 L205 483 Z" fill="#BE1E2D"/>
+    <path d="M196 485 L324 617 L239 656 Z" fill="#BE1E2D"/>
+    <path d="M228 456 L267 477 L209 510 L184 492 Z" fill="#F7F0DF"/>
+
+    <path d="M590 306 C690 324 766 406 778 506 C790 606 732 686 637 726 L543 783 L506 713 L397 742 L451 652 L367 609 L428 566 L362 528 L452 488 L423 405 L502 430 L548 340 Z" fill="#F7F0DF"/>
+    <path d="M440 448 L500 498 L454 514 Z" fill="#061A2D"/>
+    <path d="M394 527 L462 563 L408 584 Z" fill="#061A2D"/>
+    <path d="M410 610 L498 632 L453 650 Z" fill="#061A2D"/>
+    <path d="M609 378 C654 371 701 381 732 407 C687 399 650 403 614 421 Z" fill="#061A2D"/>
+    <path d="M592 449 C629 477 682 462 706 424 C703 481 636 510 586 475 Z" fill="#061A2D"/>
+    <path d="M720 558 C686 603 636 624 580 624" fill="none" stroke="#061A2D" stroke-width="18" stroke-linecap="round"/>
+    <path d="M612 638 L728 625 L680 700 Z" fill="#061A2D"/>
+    <path d="M523 702 L469 796 L594 736 Z" fill="#F7F0DF"/>
+    <path d="M662 708 L739 802 L717 688 Z" fill="#F7F0DF"/>
+    <path d="M705 728 L770 858 L745 716 Z" fill="#F7F0DF"/>
+  </g>
+</svg>
