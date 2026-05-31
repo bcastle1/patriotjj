@@ -11,6 +11,8 @@ const OLD_PROGRAM_NAMES = [
   "AHS Patriots Jiu-Jitsu",
   "Patriot Jiu Jitsu"
 ];
+const MEDIA_RELEASE_TEXT =
+  `I also give ${PROGRAM_NAME} permission to photograph, video record, audio record, or otherwise capture the participant's image, voice, name, likeness, and participation during program activities. If I am signing as a parent or legal guardian, this permission includes media of my child. ${PROGRAM_NAME} may use this media, in whole or in part, in a respectful manner for program-related purposes, including on its website, social media pages, printed materials, flyers, newsletters, and other promotional or informational communications. I understand this permission is given without payment or additional approval, and that personal contact information will not be published as part of this permission.`;
 
 const $ = (selector, scope = document) => scope.querySelector(selector);
 const $$ = (selector, scope = document) => Array.from(scope.querySelectorAll(selector));
@@ -110,7 +112,7 @@ function seedState() {
       publicVideoCaption: "Hybrid martial arts, student wellness, self-defense, and leadership.",
       waiverTitle: `${PROGRAM_NAME} Participation Waiver and Release`,
       waiverBody:
-        `I request that {participantName} be allowed to participate in ${PROGRAM_NAME} camp, class, self-defense, fitness, and related activities. I understand that martial arts and physical training involve inherent risks, including falls, contact, grappling, takedowns, exercise, games, equipment use, illness exposure, bruises, sprains, strains, cuts, concussion, broken bones, serious injury, property loss, or other harm.\n\nI certify that the participant is physically able to participate, will follow instructor directions, and will stop and notify an instructor if they feel unsafe or injured. I authorize reasonable first aid and emergency care if needed and understand that I am responsible for medical costs.\n\nTo the fullest extent permitted by law, I voluntarily assume the risks of participation and release, waive, and hold harmless ${PROGRAM_NAME}, its owners, instructors, volunteers, hosts, facilities, and affiliates from claims arising from ordinary negligence related to participation, except where not allowed by law. If signing for a minor, I certify that I am the parent or legal guardian, or am otherwise authorized to sign.\n\nI understand this is an electronic record. By typing my name and submitting this form, I intend to electronically sign this waiver for {eventTitle}, {trackLabel}.`
+        `I request that {participantName} be allowed to participate in ${PROGRAM_NAME} camp, class, self-defense, fitness, and related activities. I understand that martial arts and physical training involve inherent risks, including falls, contact, grappling, takedowns, exercise, games, equipment use, illness exposure, bruises, sprains, strains, cuts, concussion, broken bones, serious injury, property loss, or other harm.\n\nI certify that the participant is physically able to participate, will follow instructor directions, and will stop and notify an instructor if they feel unsafe or injured. I authorize reasonable first aid and emergency care if needed and understand that I am responsible for medical costs.\n\nTo the fullest extent permitted by law, I voluntarily assume the risks of participation and release, waive, and hold harmless ${PROGRAM_NAME}, its owners, instructors, volunteers, hosts, facilities, and affiliates from claims arising from ordinary negligence related to participation, except where not allowed by law. If signing for a minor, I certify that I am the parent or legal guardian, or am otherwise authorized to sign.\n\n${MEDIA_RELEASE_TEXT}\n\nI understand this is an electronic record. By typing my name and submitting this form, I intend to electronically sign this waiver for {eventTitle}, {trackLabel}.`
     },
     events: [
       {
@@ -411,6 +413,7 @@ function normalizeSettings(settings) {
   normalized.publicVideoTitle = replaceProgramBrand(normalized.publicVideoTitle);
   normalized.waiverTitle = replaceProgramBrand(normalized.waiverTitle);
   normalized.waiverBody = replaceProgramBrand(normalized.waiverBody);
+  normalized.waiverBody = addMediaReleaseToWaiver(normalized.waiverBody);
   return normalized;
 }
 
@@ -489,6 +492,26 @@ function normalizeMediaItem(item) {
 function replaceProgramBrand(value) {
   if (typeof value !== "string") return value;
   return OLD_PROGRAM_NAMES.reduce((text, oldName) => text.replaceAll(oldName, PROGRAM_NAME), value);
+}
+
+function addMediaReleaseToWaiver(value) {
+  if (typeof value !== "string") return value;
+  if (!value.trim()) return MEDIA_RELEASE_TEXT;
+  const lowerValue = value.toLowerCase();
+  const alreadyCoversMedia =
+    lowerValue.includes("image, voice, name, likeness") ||
+    (lowerValue.includes("photograph") && lowerValue.includes("video") && lowerValue.includes("website") && lowerValue.includes("social media"));
+  if (alreadyCoversMedia) return value;
+
+  const signatureParagraph = "I understand this is an electronic record.";
+  const signatureIndex = value.indexOf(signatureParagraph);
+  if (signatureIndex === -1) {
+    return `${value.trim()}\n\n${MEDIA_RELEASE_TEXT}`;
+  }
+
+  const beforeSignature = value.slice(0, signatureIndex).trim();
+  const afterSignature = value.slice(signatureIndex).trim();
+  return `${beforeSignature}\n\n${MEDIA_RELEASE_TEXT}\n\n${afterSignature}`;
 }
 
 function saveState() {
