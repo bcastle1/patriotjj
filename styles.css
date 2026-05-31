@@ -1040,11 +1040,64 @@ textarea:focus {
   gap: 20px;
 }
 
+.admin-section.admin-login-mode {
+  position: fixed;
+  right: clamp(10px, 2vw, 18px);
+  bottom: clamp(10px, 2vw, 18px);
+  z-index: 70;
+  width: min(280px, calc(100vw - 20px));
+  padding: 8px;
+  border: 1px solid rgba(21, 27, 80, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 10px 24px rgba(4, 9, 36, 0.16);
+  backdrop-filter: blur(10px);
+}
+
+.admin-section.admin-login-mode::before {
+  display: none;
+}
+
 .admin-login {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(280px, 420px);
   gap: 22px;
   align-items: start;
+}
+
+.admin-section.admin-login-mode .admin-login {
+  display: block;
+}
+
+.admin-section.admin-login-mode .login-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 38px;
+  align-items: end;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.admin-section.admin-login-mode label {
+  gap: 3px;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 760;
+}
+
+.admin-section.admin-login-mode input {
+  min-height: 34px;
+  border-radius: 999px;
+  padding: 7px 12px;
+  font-size: 0.82rem;
+}
+
+.admin-section.admin-login-mode .ghost-button {
+  width: 38px;
+  min-height: 34px;
+  padding: 0;
+  border-radius: 999px;
 }
 
 .login-card,

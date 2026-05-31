@@ -9,7 +9,7 @@
       content="Patriots Jiu-jitsu summer camp signup, Venmo payment, team store, reviews, Q&A, and admin management app."
     >
     <link rel="icon" href="assets/ahs-patriots-mark.png">
-    <link rel="stylesheet" href="styles.css?v=20260531-shirt-store">
+    <link rel="stylesheet" href="styles.css?v=20260531-subtle-admin">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
   </head>
   <body>
@@ -33,7 +33,6 @@
           <a href="#qa"><i data-lucide="circle-help"></i>Q&amp;A</a>
           <a href="#reviews"><i data-lucide="star"></i>Reviews</a>
           <a href="#contact"><i data-lucide="mail"></i>Contact</a>
-          <a href="#admin"><i data-lucide="lock-keyhole"></i>Admin</a>
         </nav>
       </header>
 
@@ -329,19 +328,13 @@
 
         <section class="section admin-section" id="admin">
           <div class="admin-login" id="admin-login">
-            <div>
-              <p class="eyebrow">Admin management</p>
-              <h2>Manager login.</h2>
-              <p>
-                Demo admin access is protected in the interface. A production embed
-                should connect this screen to server-side authentication.
-              </p>
-            </div>
             <form id="admin-login-form" class="login-card">
-              <label>Password<input name="password" type="password" autocomplete="current-password" required></label>
-              <button class="primary-button" type="submit">
+              <label>
+                <span>Admin</span>
+                <input name="password" type="password" autocomplete="current-password" placeholder="Password" required>
+              </label>
+              <button class="ghost-button" type="submit" aria-label="Open admin">
                 <i data-lucide="unlock-keyhole"></i>
-                Open Admin
               </button>
             </form>
           </div>
@@ -635,6 +628,6 @@
     </dialog>
 
     <div class="toast" id="toast" role="status"></div>
-    <script src="app.js?v=20260531-review-queue"></script>
+    <script src="app.js?v=20260531-subtle-admin"></script>
   </body>
 </html>

@@ -97,6 +97,7 @@ const refs = {
   contactEmail: $("#contact-email"),
   contactSite: $("#contact-site"),
   contactVenmo: $("#contact-venmo"),
+  adminSection: $("#admin"),
   adminLogin: $("#admin-login"),
   adminLoginForm: $("#admin-login-form"),
   adminApp: $("#admin-app"),
@@ -1057,6 +1058,8 @@ function approvedReviews() {
 
 function renderAdminGate() {
   const isAuthed = sessionStorage.getItem("patriotJjAdmin") === "true";
+  refs.adminSection.classList.toggle("admin-login-mode", !isAuthed);
+  refs.adminSection.classList.toggle("admin-dashboard-mode", isAuthed);
   refs.adminLogin.classList.toggle("hidden", isAuthed);
   refs.adminApp.classList.toggle("hidden", !isAuthed);
   if (isAuthed) renderAdmin();
