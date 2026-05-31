@@ -704,6 +704,24 @@ a svg,
   gap: 18px;
 }
 
+.about-summary-card {
+  display: grid;
+  gap: 16px;
+  max-width: 980px;
+  padding: clamp(18px, 3vw, 28px);
+  border: 1px solid rgba(21, 27, 80, 0.13);
+  border-radius: var(--radius);
+  background: #ffffff;
+  box-shadow: 0 12px 24px rgba(21, 27, 80, 0.08);
+}
+
+.about-summary-card p {
+  margin: 0;
+  color: #31405b;
+  font-size: clamp(1rem, 1.4vw, 1.18rem);
+  line-height: 1.65;
+}
+
 .instructor-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
