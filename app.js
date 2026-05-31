@@ -107,7 +107,7 @@ function seedState() {
     settings: {
       contactEmail: "info@patriotjj.com",
       phone: "",
-      website: "https://www.patriotsjj.com",
+      website: "https://www.patriotjj.com/",
       venmoHandle: "bcastle1",
       publicVideoUrl: "",
       publicVideoTitle: `${PROGRAM_NAME} Summer Camps`,
@@ -391,17 +391,23 @@ function mergeDefaultRows(defaultRows, incomingRows) {
 
 function normalizeSettings(settings) {
   const normalized = { ...settings };
-  const oldSiteValues = new Set([
+  const homePageSiteValues = new Set([
     "patriotjj.com",
     "www.patriotjj.com",
     "http://patriotjj.com",
     "http://www.patriotjj.com",
     "https://patriotjj.com",
-    "https://www.patriotjj.com"
+    "https://www.patriotjj.com",
+    "patriotsjj.com",
+    "www.patriotsjj.com",
+    "http://patriotsjj.com",
+    "http://www.patriotsjj.com",
+    "https://patriotsjj.com",
+    "https://www.patriotsjj.com"
   ]);
   const websiteValue = String(normalized.website || "").trim().toLowerCase().replace(/\/+$/, "");
-  if (oldSiteValues.has(websiteValue)) {
-    normalized.website = "https://www.patriotsjj.com";
+  if (homePageSiteValues.has(websiteValue)) {
+    normalized.website = "https://www.patriotjj.com/";
   }
   if (normalized.publicVideoTitle === "Patriot Jiu Jitsu Summer Camps") {
     normalized.publicVideoTitle = `${PROGRAM_NAME} Summer Camps`;
@@ -642,7 +648,7 @@ function applyPublicSettings() {
   const emailHref = `mailto:${state.settings.contactEmail}?subject=${encodeURIComponent(`${PROGRAM_NAME} question`)}`;
   refs.heroEmail.href = emailHref;
   refs.contactEmail.href = emailHref;
-  refs.contactSite.href = state.settings.website || "https://www.patriotsjj.com";
+  refs.contactSite.href = state.settings.website || "https://www.patriotjj.com/";
   refs.contactVenmo.href = venmoProfileUrl();
   refs.contactVenmo.innerHTML = `<i data-lucide="badge-dollar-sign"></i>Venmo @${escapeHtml(cleanVenmoHandle())}`;
   const activeFlyer = getActiveFlyer();
