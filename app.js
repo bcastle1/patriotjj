@@ -103,7 +103,7 @@ function seedState() {
     settings: {
       contactEmail: "info@patriotjj.com",
       phone: "",
-      website: "https://www.patriotjj.com",
+      website: "https://www.patriotsjj.com",
       venmoHandle: "bcastle1",
       publicVideoUrl: "",
       publicVideoTitle: `${PROGRAM_NAME} Summer Camps`,
@@ -342,7 +342,7 @@ function seedState() {
             "Confidence, discipline, focus, and leadership",
             "Bullying prevention and situational awareness"
           ],
-          footer: "patriotjj.com • Venmo @bcastle1"
+          footer: "patriotsjj.com • Venmo @bcastle1"
         }
       ],
       videos: [],
@@ -387,6 +387,18 @@ function mergeDefaultRows(defaultRows, incomingRows) {
 
 function normalizeSettings(settings) {
   const normalized = { ...settings };
+  const oldSiteValues = new Set([
+    "patriotjj.com",
+    "www.patriotjj.com",
+    "http://patriotjj.com",
+    "http://www.patriotjj.com",
+    "https://patriotjj.com",
+    "https://www.patriotjj.com"
+  ]);
+  const websiteValue = String(normalized.website || "").trim().toLowerCase().replace(/\/+$/, "");
+  if (oldSiteValues.has(websiteValue)) {
+    normalized.website = "https://www.patriotsjj.com";
+  }
   if (normalized.publicVideoTitle === "Patriot Jiu Jitsu Summer Camps") {
     normalized.publicVideoTitle = `${PROGRAM_NAME} Summer Camps`;
   }
@@ -447,7 +459,7 @@ function normalizeFlyer(item) {
     scheduleLine: "Add schedule",
     priceLine: "Add pricing",
     bullets: [],
-    footer: "patriotjj.com • Venmo @bcastle1"
+    footer: "patriotsjj.com • Venmo @bcastle1"
   };
   const normalized = { ...base, ...item };
   if (typeof normalized.bullets === "string") {
@@ -592,7 +604,7 @@ function applyPublicSettings() {
   const emailHref = `mailto:${state.settings.contactEmail}?subject=${encodeURIComponent(`${PROGRAM_NAME} question`)}`;
   refs.heroEmail.href = emailHref;
   refs.contactEmail.href = emailHref;
-  refs.contactSite.href = state.settings.website || "https://www.patriotjj.com";
+  refs.contactSite.href = state.settings.website || "https://www.patriotsjj.com";
   refs.contactVenmo.href = venmoProfileUrl();
   refs.contactVenmo.innerHTML = `<i data-lucide="badge-dollar-sign"></i>Venmo @${escapeHtml(cleanVenmoHandle())}`;
   const activeFlyer = getActiveFlyer();
@@ -1919,7 +1931,7 @@ function addFlyer() {
       "Confidence, discipline, and focus",
       "Leadership and character development"
     ],
-    footer: "patriotjj.com • Venmo @bcastle1"
+    footer: "patriotsjj.com • Venmo @bcastle1"
   }));
   saveState();
   renderMediaAdmin();
@@ -1991,7 +2003,7 @@ function makeFlyerDataUrl(flyer) {
       <text x="450" y="984" text-anchor="middle" fill="#071d49" font-family="Arial Black, Arial, sans-serif" font-size="34" font-weight="900">EXPERT MARTIAL ARTS INSTRUCTORS</text>
       <text x="450" y="1030" text-anchor="middle" fill="#263247" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="800">Self-defense • leadership • confidence • discipline • focus</text>
       <rect x="110" y="1062" width="680" height="54" rx="12" fill="#071d49"/>
-      <text x="450" y="1098" text-anchor="middle" fill="#ffffff" font-family="Arial Black, Arial, sans-serif" font-size="29" font-weight="900">${svgText(flyer.footer || "patriotjj.com").slice(0, 70)}</text>
+      <text x="450" y="1098" text-anchor="middle" fill="#ffffff" font-family="Arial Black, Arial, sans-serif" font-size="29" font-weight="900">${svgText(flyer.footer || "patriotsjj.com").slice(0, 70)}</text>
     </svg>
   `.trim();
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
@@ -2033,7 +2045,7 @@ function buildEditPlan() {
     "0:20 - Cut to takedown, sweep, and control drills.",
     "0:45 - Add leadership and confidence caption.",
     "1:00 - Show team bow, smiles, and certificate moment.",
-    "1:15 - End card: patriotjj.com | Venmo @bcastle1."
+    "1:15 - End card: patriotsjj.com | Venmo @bcastle1."
   ].join("\n");
   toast("Video edit plan created.");
 }
