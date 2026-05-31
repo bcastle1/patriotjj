@@ -704,6 +704,10 @@ a svg,
   gap: 18px;
 }
 
+.instructor-section .about-summary-card {
+  max-width: none;
+}
+
 .about-summary-card {
   display: grid;
   gap: 16px;
