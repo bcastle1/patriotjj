@@ -2186,6 +2186,8 @@ th {
     align-items: flex-start;
     flex-direction: column;
     gap: 10px;
+    position: static;
+    z-index: auto;
   }
 
   .brand {
