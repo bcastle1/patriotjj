@@ -287,10 +287,16 @@
                 <p class="eyebrow">Reviews</p>
                 <h2>What families say.</h2>
               </div>
-              <button class="ghost-button" type="button" id="open-review">
-                <i data-lucide="message-square-plus"></i>
-                Leave Review
-              </button>
+              <div class="button-row">
+                <a class="ghost-button" href="reviews.html">
+                  <i data-lucide="star"></i>
+                  More Reviews
+                </a>
+                <button class="ghost-button" type="button" id="open-review">
+                  <i data-lucide="message-square-plus"></i>
+                  Leave Review
+                </button>
+              </div>
             </div>
             <div class="review-list" id="review-list"></div>
           </div>
@@ -552,7 +558,7 @@
                 </div>
                 <div class="workspace-card">
                   <h3>Reviews</h3>
-                  <p class="form-note">Edit public review text, adjust the star rating, or remove a review from the site.</p>
+                  <p class="form-note">New reviews stay pending until approved. Edit text, adjust the star rating, approve, or remove reviews from this queue.</p>
                   <div id="review-editor"></div>
                 </div>
               </div>
@@ -620,6 +626,7 @@
           <label>Rating<select name="rating" required><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select></label>
         </div>
         <label>Review<textarea name="quote" rows="5" required></textarea></label>
+        <p class="form-note">Reviews are queued for admin approval before they appear publicly.</p>
         <button class="primary-button" type="submit">
           <i data-lucide="star"></i>
           Submit Review
@@ -628,6 +635,6 @@
     </dialog>
 
     <div class="toast" id="toast" role="status"></div>
-    <script src="app.js?v=20260531-review-admin"></script>
+    <script src="app.js?v=20260531-review-queue"></script>
   </body>
 </html>

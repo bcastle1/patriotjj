@@ -2410,6 +2410,15 @@ th {
   white-space: nowrap;
 }
 
+.reviews-page-section h1 {
+  color: var(--navy);
+  text-shadow: none;
+}
+
+.all-reviews-list {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 /* Keep the section accent from becoming a grid/flex item and creating empty cells. */
 .section {
   position: relative;
@@ -2431,5 +2440,9 @@ th {
   .section::before {
     top: 18px;
     left: 18px;
+  }
+
+  .all-reviews-list {
+    grid-template-columns: 1fr;
   }
 }

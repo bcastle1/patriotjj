@@ -302,9 +302,9 @@ function seedState() {
       }
     ],
     reviews: [
-      { id: "review-1", name: "Parent of 5th grader", rating: 5, quote: "Our son left more confident and could explain what he learned without acting reckless." },
-      { id: "review-2", name: "AHS family", rating: 5, quote: "The leadership and character pieces made it feel like more than just a sports camp." },
-      { id: "review-3", name: "Middle school student", rating: 5, quote: "The instructors made hard skills feel understandable and fun." }
+      { id: "review-1", name: "Parent of 5th grader", rating: 5, quote: "Our son left more confident and could explain what he learned without acting reckless.", status: "approved", submittedAt: "2026-05-26T09:00:00.000Z", approvedAt: "2026-05-26T09:00:00.000Z" },
+      { id: "review-2", name: "AHS family", rating: 5, quote: "The leadership and character pieces made it feel like more than just a sports camp.", status: "approved", submittedAt: "2026-05-26T09:05:00.000Z", approvedAt: "2026-05-26T09:05:00.000Z" },
+      { id: "review-3", name: "Middle school student", rating: 5, quote: "The instructors made hard skills feel understandable and fun.", status: "approved", submittedAt: "2026-05-26T09:10:00.000Z", approvedAt: "2026-05-26T09:10:00.000Z" }
     ],
     songs: [
       { id: "song-01", title: "Courage Cadence", mood: "Clean march beat", bpm: 96, active: true },
@@ -376,6 +376,7 @@ function mergeState(base, incoming) {
     settings: normalizeSettings({ ...base.settings, ...(incoming.settings || {}) }),
     storeItems: normalizeStoreCatalog(base.storeItems, incoming.storeItems, incoming.storeCatalogVersion),
     faqs: mergeDefaultRows(base.faqs, incoming.faqs),
+    reviews: normalizeReviews(base.reviews, incoming.reviews),
     media: {
       photos: (incoming.media?.photos || base.media.photos).map(normalizeMediaItem),
       flyers: (incoming.media?.flyers || base.media.flyers).map(normalizeFlyer),
@@ -392,6 +393,24 @@ function mergeDefaultRows(defaultRows, incomingRows) {
     ...incomingRows,
     ...defaultRows.filter((row) => !incomingIds.has(row.id))
   ];
+}
+
+function normalizeReviews(defaultReviews, incomingReviews) {
+  const source = Array.isArray(incomingReviews) ? incomingReviews : defaultReviews;
+  return source.map(normalizeReview);
+}
+
+function normalizeReview(review) {
+  const status = review.status === "pending" ? "pending" : "approved";
+  return {
+    id: review.id || makeId("review"),
+    name: replaceProgramBrand(clean(review.name) || "Anonymous"),
+    rating: Math.min(5, Math.max(1, Number(review.rating || 5))),
+    quote: replaceProgramBrand(clean(review.quote)),
+    status,
+    submittedAt: review.submittedAt || review.createdAt || new Date().toISOString(),
+    approvedAt: status === "approved" ? (review.approvedAt || review.submittedAt || review.createdAt || new Date().toISOString()) : ""
+  };
 }
 
 function normalizeSettings(settings) {
@@ -1000,7 +1019,8 @@ function renderFaqs() {
 }
 
 function renderReviews() {
-  refs.reviewList.innerHTML = state.reviews
+  const reviews = approvedReviews().slice(0, 3);
+  refs.reviewList.innerHTML = reviews.length ? reviews
     .map((review) => `
       <article class="review-card">
         <div class="review-stars">${"★".repeat(Number(review.rating || 5))}</div>
@@ -1008,7 +1028,7 @@ function renderReviews() {
         <strong>${escapeHtml(review.name)}</strong>
       </article>
     `)
-    .join("");
+    .join("") : `<p class="form-note">Approved reviews will appear here after admin review.</p>`;
 }
 
 function handleReviewSubmit(event) {
@@ -1018,14 +1038,21 @@ function handleReviewSubmit(event) {
     id: makeId("review"),
     name: clean(formData.get("name")),
     rating: Number(formData.get("rating") || 5),
-    quote: clean(formData.get("quote"))
+    quote: clean(formData.get("quote")),
+    status: "pending",
+    submittedAt: new Date().toISOString(),
+    approvedAt: ""
   });
   saveState();
   refs.reviewForm.reset();
   refs.reviewModal.close();
   renderReviews();
   renderReviewEditor();
-  toast("Review added.");
+  toast("Review submitted for admin approval.");
+}
+
+function approvedReviews() {
+  return state.reviews.filter((review) => review.status === "approved");
 }
 
 function renderAdminGate() {
@@ -2189,18 +2216,6 @@ function addFaq() {
   toast("Q&A added.");
 }
 
-function renderReviewSummary() {
-  refs.reviewEditor.innerHTML = state.reviews
-    .map((review) => `
-      <div class="review-card">
-        <div class="review-stars">${"★".repeat(Number(review.rating || 5))}</div>
-        <p>"${escapeHtml(review.quote)}"</p>
-        <strong>${escapeHtml(review.name)}</strong>
-      </div>
-    `)
-    .join("");
-}
-
 function renderReviewEditor() {
   if (!state.reviews.length) {
     refs.reviewEditor.innerHTML = `<p class="form-note">No reviews have been submitted yet.</p>`;
@@ -2208,11 +2223,16 @@ function renderReviewEditor() {
   }
 
   refs.reviewEditor.innerHTML = state.reviews
+    .slice()
+    .sort((a, b) => {
+      if (a.status !== b.status) return a.status === "pending" ? -1 : 1;
+      return new Date(b.submittedAt || 0) - new Date(a.submittedAt || 0);
+    })
     .map((review) => `
       <form class="editor-card" data-review-editor="${review.id}">
         <div class="mini-actions">
           <h3>${escapeHtml(review.name || "Review")}</h3>
-          <span class="form-note">Public review</span>
+          <span class="status-pill ${review.status === "approved" ? "active" : "pending"}">${review.status === "approved" ? "Approved" : "Pending review"}</span>
         </div>
         <div class="form-grid two">
           <label>Reviewer<input name="name" value="${escapeAttr(review.name)}" required></label>
@@ -2221,10 +2241,18 @@ function renderReviewEditor() {
               ${[5, 4, 3, 2, 1].map((rating) => `<option value="${rating}" ${Number(review.rating || 5) === rating ? "selected" : ""}>${rating}</option>`).join("")}
             </select>
           </label>
+          <label>Status
+            <select name="status" required>
+              <option value="pending" ${review.status === "pending" ? "selected" : ""}>Pending review</option>
+              <option value="approved" ${review.status === "approved" ? "selected" : ""}>Approved and public</option>
+            </select>
+          </label>
+          <label>Submitted<input value="${escapeAttr(formatDateTime(review.submittedAt))}" readonly></label>
         </div>
         <label>Review<textarea name="quote" rows="4" required>${escapeHtml(review.quote)}</textarea></label>
         <div class="button-row">
           <button class="primary-button" type="submit"><i data-lucide="save"></i>Save Review</button>
+          ${review.status === "pending" ? `<button class="secondary-button" type="button" data-approve-review="${review.id}"><i data-lucide="check-circle-2"></i>Approve</button>` : ""}
           <button class="danger-button" type="button" data-delete-review="${review.id}"><i data-lucide="trash-2"></i>Remove</button>
         </div>
       </form>
@@ -2236,6 +2264,9 @@ function renderReviewEditor() {
   });
   $$("[data-delete-review]", refs.reviewEditor).forEach((button) => {
     button.addEventListener("click", () => removeReview(button.dataset.deleteReview));
+  });
+  $$("[data-approve-review]", refs.reviewEditor).forEach((button) => {
+    button.addEventListener("click", () => approveReview(button.dataset.approveReview));
   });
   refreshIcons();
 }
@@ -2249,10 +2280,24 @@ function handleReviewSave(event) {
   review.name = clean(formData.get("name"));
   review.rating = Math.min(5, Math.max(1, Number(formData.get("rating") || 5)));
   review.quote = clean(formData.get("quote"));
+  const nextStatus = formData.get("status") === "approved" ? "approved" : "pending";
+  review.status = nextStatus;
+  review.approvedAt = nextStatus === "approved" ? (review.approvedAt || new Date().toISOString()) : "";
   saveState();
   renderReviews();
   renderReviewEditor();
   toast("Review updated.");
+}
+
+function approveReview(reviewId) {
+  const review = state.reviews.find((item) => item.id === reviewId);
+  if (!review) return;
+  review.status = "approved";
+  review.approvedAt = new Date().toISOString();
+  saveState();
+  renderReviews();
+  renderReviewEditor();
+  toast("Review approved and published.");
 }
 
 function removeReview(reviewId) {
