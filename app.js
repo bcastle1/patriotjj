@@ -6,6 +6,9 @@ const PUBLIC_FLYER_IMAGE = "assets/patriot-jj-flyer.png?v=20260530-patriots";
 const STORE_MARK_TEXT = "AHS";
 const STORE_ITEM_TEXT = "Patriots Jiu-jitsu";
 const STORE_CATALOG_VERSION = "20260531-shirt-store";
+const EXAMPLE_PARTICIPANT_IDS = new Set(["participant-avery", "participant-luke"]);
+const EXAMPLE_PARTICIPANT_EMAILS = new Set(["avery.family@example.com", "ellis.family@example.com"]);
+const EXAMPLE_PAYMENT_IDS = new Set(["payment-avery", "payment-luke"]);
 const T_SHIRT_PRICE = 22;
 const STORE_SHIRT_ITEMS = [
   {
@@ -217,64 +220,8 @@ function seedState() {
         ]
       }
     ],
-    participants: [
-      {
-        id: "participant-avery",
-        firstName: "Avery",
-        lastName: "Morgan",
-        age: 12,
-        gender: "Female",
-        guardianName: "Jordan Morgan",
-        address: "American Fork, UT",
-        email: "avery.family@example.com",
-        phone: "(801) 555-0147",
-        eventId: "session-1",
-        trackId: "youth",
-        shirtSize: "Youth L",
-        notes: "Beginner. Excited about self-defense.",
-        signedUpAt: "2026-05-26T09:30:00.000Z"
-      },
-      {
-        id: "participant-luke",
-        firstName: "Luke",
-        lastName: "Ellis",
-        age: 16,
-        gender: "Male",
-        guardianName: "Mara Ellis",
-        address: "Lehi, UT",
-        email: "ellis.family@example.com",
-        phone: "(385) 555-0192",
-        eventId: "both-sessions",
-        trackId: "teen",
-        shirtSize: "Adult M",
-        notes: "Wrestling background.",
-        signedUpAt: "2026-05-26T10:00:00.000Z"
-      }
-    ],
-    payments: [
-      {
-        id: "payment-avery",
-        participantId: "participant-avery",
-        orderId: "",
-        date: "2026-05-26T09:36:00.000Z",
-        amount: 150,
-        memo: `${PROGRAM_NAME} - Session 1 - Avery Morgan`,
-        method: "Venmo",
-        status: "paid",
-        receiptSent: true
-      },
-      {
-        id: "payment-luke",
-        participantId: "participant-luke",
-        orderId: "",
-        date: "2026-05-26T10:02:00.000Z",
-        amount: 350,
-        memo: `${PROGRAM_NAME} - Both Sessions Discount - Luke Ellis`,
-        method: "Venmo",
-        status: "pending",
-        receiptSent: false
-      }
-    ],
+    participants: [],
+    payments: [],
     storeItems: defaultStoreItems(),
     storeOrders: [],
     faqs: [
@@ -365,7 +312,12 @@ function seedState() {
 function loadState() {
   try {
     const stored = JSON.parse(localStorage.getItem(APP_KEY));
-    return mergeState(seedState(), stored || {});
+    const merged = mergeState(seedState(), stored || {});
+    const { state: cleanedState, changed } = removeExampleAdminRecords(merged);
+    if (changed) {
+      localStorage.setItem(APP_KEY, JSON.stringify(cleanedState));
+    }
+    return cleanedState;
   } catch {
     return seedState();
   }
@@ -396,6 +348,32 @@ function mergeDefaultRows(defaultRows, incomingRows) {
     ...incomingRows,
     ...defaultRows.filter((row) => !incomingIds.has(row.id))
   ];
+}
+
+function removeExampleAdminRecords(appState) {
+  const participants = Array.isArray(appState.participants) ? appState.participants : [];
+  const payments = Array.isArray(appState.payments) ? appState.payments : [];
+  const removedParticipantIds = new Set();
+  const cleanedParticipants = participants.filter((participant) => {
+    const isExample =
+      EXAMPLE_PARTICIPANT_IDS.has(participant.id) ||
+      EXAMPLE_PARTICIPANT_EMAILS.has(String(participant.email || "").toLowerCase());
+    if (isExample) removedParticipantIds.add(participant.id);
+    return !isExample;
+  });
+  const cleanedPayments = payments.filter((payment) => (
+    !EXAMPLE_PAYMENT_IDS.has(payment.id) &&
+    !removedParticipantIds.has(payment.participantId) &&
+    !EXAMPLE_PARTICIPANT_IDS.has(payment.participantId)
+  ));
+  return {
+    state: {
+      ...appState,
+      participants: cleanedParticipants,
+      payments: cleanedPayments
+    },
+    changed: cleanedParticipants.length !== participants.length || cleanedPayments.length !== payments.length
+  };
 }
 
 function normalizeReviews(defaultReviews, incomingReviews) {
