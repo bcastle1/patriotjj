@@ -2188,6 +2188,25 @@ th {
     gap: 10px;
   }
 
+  .brand {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .brand > span:last-child {
+    flex: 1 1 0;
+    max-width: min(32ch, calc(100% - 58px));
+    min-width: 0;
+  }
+
+  .brand small {
+    font-size: clamp(0.66rem, 2.85vw, 0.78rem);
+    line-height: 1.18;
+    max-width: 100%;
+    white-space: normal;
+    width: 100%;
+  }
+
   .brand-mark {
     width: 42px;
     height: 42px;
