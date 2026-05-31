@@ -9,7 +9,7 @@
       content="Patriots Jiu-jitsu summer camp signup, Venmo payment, team store, reviews, Q&A, and admin management app."
     >
     <link rel="icon" href="assets/ahs-patriots-mark.png">
-    <link rel="stylesheet" href="styles.css?v=20260531-subtle-admin">
+    <link rel="stylesheet" href="styles.css?v=20260531-admin-footer-link">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
   </head>
   <body>
@@ -328,15 +328,7 @@
 
         <section class="section admin-section" id="admin">
           <div class="admin-login" id="admin-login">
-            <form id="admin-login-form" class="login-card">
-              <label>
-                <span>Admin</span>
-                <input name="password" type="password" autocomplete="current-password" placeholder="Password" required>
-              </label>
-              <button class="ghost-button" type="submit" aria-label="Open admin">
-                <i data-lucide="unlock-keyhole"></i>
-              </button>
-            </form>
+            <button class="admin-footer-link" type="button" id="admin-open-login">Admin</button>
           </div>
 
           <div class="admin-app hidden" id="admin-app">
@@ -619,7 +611,7 @@
           <label>Rating<select name="rating" required><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select></label>
         </div>
         <label>Review<textarea name="quote" rows="5" required></textarea></label>
-        <p class="form-note">Reviews are queued for admin approval before they appear publicly.</p>
+        <p class="form-note">Thank you for sharing what the camp was like for your family.</p>
         <button class="primary-button" type="submit">
           <i data-lucide="star"></i>
           Submit Review
@@ -627,7 +619,22 @@
       </form>
     </dialog>
 
+    <dialog class="modal admin-login-modal" id="admin-login-modal">
+      <form method="dialog" class="modal-card admin-login-card" id="admin-login-form">
+        <button class="icon-close" type="button" data-close-modal aria-label="Close">x</button>
+        <p class="eyebrow">Admin</p>
+        <label>
+          <span>Password</span>
+          <input name="password" type="password" autocomplete="current-password" placeholder="Password" required>
+        </label>
+        <button class="primary-button" type="submit">
+          <i data-lucide="unlock-keyhole"></i>
+          Login
+        </button>
+      </form>
+    </dialog>
+
     <div class="toast" id="toast" role="status"></div>
-    <script src="app.js?v=20260531-subtle-admin"></script>
+    <script src="app.js?v=20260531-admin-footer-link"></script>
   </body>
 </html>

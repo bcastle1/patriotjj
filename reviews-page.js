@@ -64,7 +64,7 @@ function renderApprovedReviews() {
         <strong>${escapeHtml(review.name)}</strong>
       </article>
     `)
-    .join("") : `<p class="form-note">Approved reviews will appear here after admin review.</p>`;
+    .join("") : `<p class="form-note">Reviews will appear here after families share feedback.</p>`;
 
   if (window.lucide) window.lucide.createIcons();
 }

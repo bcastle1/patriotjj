@@ -1059,17 +1059,15 @@ textarea:focus {
 }
 
 .admin-section.admin-login-mode {
-  position: fixed;
-  right: clamp(10px, 2vw, 18px);
-  bottom: clamp(10px, 2vw, 18px);
-  z-index: 70;
-  width: min(280px, calc(100vw - 20px));
-  padding: 8px;
-  border: 1px solid rgba(21, 27, 80, 0.12);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.86);
-  box-shadow: 0 10px 24px rgba(4, 9, 36, 0.16);
-  backdrop-filter: blur(10px);
+  position: static;
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  padding: 0 2px 12px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .admin-section.admin-login-mode::before {
@@ -1084,38 +1082,56 @@ textarea:focus {
 }
 
 .admin-section.admin-login-mode .admin-login {
-  display: block;
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
 }
 
-.admin-section.admin-login-mode .login-card {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 38px;
-  align-items: end;
-  gap: 8px;
-  padding: 0;
+.admin-footer-link {
+  padding: 8px 0;
   border: 0;
+  color: rgba(255, 255, 255, 0.72);
   background: transparent;
+  font-size: 0.84rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
-.admin-section.admin-login-mode label {
-  gap: 3px;
-  color: var(--muted);
-  font-size: 0.68rem;
-  font-weight: 760;
+.admin-footer-link:hover,
+.admin-footer-link:focus-visible {
+  color: #ffffff;
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 
-.admin-section.admin-login-mode input {
-  min-height: 34px;
-  border-radius: 999px;
-  padding: 7px 12px;
-  font-size: 0.82rem;
+.admin-login-modal {
+  width: min(360px, calc(100vw - 24px));
 }
 
-.admin-section.admin-login-mode .ghost-button {
-  width: 38px;
-  min-height: 34px;
-  padding: 0;
-  border-radius: 999px;
+.admin-login-card {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+}
+
+.admin-login-card .eyebrow {
+  margin-bottom: 0;
+}
+
+.admin-login-card label {
+  display: grid;
+  gap: 7px;
+  color: var(--navy);
+  font-weight: 820;
+}
+
+.admin-login-card input {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px 12px;
 }
 
 .login-card,

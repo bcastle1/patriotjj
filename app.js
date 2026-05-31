@@ -99,6 +99,8 @@ const refs = {
   contactVenmo: $("#contact-venmo"),
   adminSection: $("#admin"),
   adminLogin: $("#admin-login"),
+  adminOpenLogin: $("#admin-open-login"),
+  adminLoginModal: $("#admin-login-modal"),
   adminLoginForm: $("#admin-login-form"),
   adminApp: $("#admin-app"),
   adminLogout: $("#admin-logout"),
@@ -628,6 +630,7 @@ function bindEvents() {
   refs.storeForm.addEventListener("submit", handleStoreOrder);
   refs.openReview.addEventListener("click", () => refs.reviewModal.showModal());
   refs.reviewForm.addEventListener("submit", handleReviewSubmit);
+  refs.adminOpenLogin.addEventListener("click", () => refs.adminLoginModal.showModal());
   refs.adminLoginForm.addEventListener("submit", handleAdminLogin);
   refs.adminLogout.addEventListener("click", () => {
     sessionStorage.removeItem("patriotJjAdmin");
@@ -1029,7 +1032,7 @@ function renderReviews() {
         <strong>${escapeHtml(review.name)}</strong>
       </article>
     `)
-    .join("") : `<p class="form-note">Approved reviews will appear here after admin review.</p>`;
+    .join("") : `<p class="form-note">Reviews will appear here after families share feedback.</p>`;
 }
 
 function handleReviewSubmit(event) {
@@ -1049,7 +1052,7 @@ function handleReviewSubmit(event) {
   refs.reviewModal.close();
   renderReviews();
   renderReviewEditor();
-  toast("Review submitted for admin approval.");
+  toast("Review submitted. Thank you for sharing.");
 }
 
 function approvedReviews() {
@@ -1074,6 +1077,7 @@ function handleAdminLogin(event) {
   }
   sessionStorage.setItem("patriotJjAdmin", "true");
   refs.adminLoginForm.reset();
+  refs.adminLoginModal.close();
   renderAdminGate();
   toast("Admin dashboard unlocked.");
 }
