@@ -2189,7 +2189,7 @@ function addFaq() {
   toast("Q&A added.");
 }
 
-function renderReviewEditor() {
+function renderReviewSummary() {
   refs.reviewEditor.innerHTML = state.reviews
     .map((review) => `
       <div class="review-card">
@@ -2199,6 +2199,71 @@ function renderReviewEditor() {
       </div>
     `)
     .join("");
+}
+
+function renderReviewEditor() {
+  if (!state.reviews.length) {
+    refs.reviewEditor.innerHTML = `<p class="form-note">No reviews have been submitted yet.</p>`;
+    return;
+  }
+
+  refs.reviewEditor.innerHTML = state.reviews
+    .map((review) => `
+      <form class="editor-card" data-review-editor="${review.id}">
+        <div class="mini-actions">
+          <h3>${escapeHtml(review.name || "Review")}</h3>
+          <span class="form-note">Public review</span>
+        </div>
+        <div class="form-grid two">
+          <label>Reviewer<input name="name" value="${escapeAttr(review.name)}" required></label>
+          <label>Rating
+            <select name="rating" required>
+              ${[5, 4, 3, 2, 1].map((rating) => `<option value="${rating}" ${Number(review.rating || 5) === rating ? "selected" : ""}>${rating}</option>`).join("")}
+            </select>
+          </label>
+        </div>
+        <label>Review<textarea name="quote" rows="4" required>${escapeHtml(review.quote)}</textarea></label>
+        <div class="button-row">
+          <button class="primary-button" type="submit"><i data-lucide="save"></i>Save Review</button>
+          <button class="danger-button" type="button" data-delete-review="${review.id}"><i data-lucide="trash-2"></i>Remove</button>
+        </div>
+      </form>
+    `)
+    .join("");
+
+  $$("[data-review-editor]", refs.reviewEditor).forEach((form) => {
+    form.addEventListener("submit", handleReviewSave);
+  });
+  $$("[data-delete-review]", refs.reviewEditor).forEach((button) => {
+    button.addEventListener("click", () => removeReview(button.dataset.deleteReview));
+  });
+  refreshIcons();
+}
+
+function handleReviewSave(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const review = state.reviews.find((item) => item.id === form.dataset.reviewEditor);
+  if (!review) return;
+  const formData = new FormData(form);
+  review.name = clean(formData.get("name"));
+  review.rating = Math.min(5, Math.max(1, Number(formData.get("rating") || 5)));
+  review.quote = clean(formData.get("quote"));
+  saveState();
+  renderReviews();
+  renderReviewEditor();
+  toast("Review updated.");
+}
+
+function removeReview(reviewId) {
+  const review = state.reviews.find((item) => item.id === reviewId);
+  if (!review) return;
+  if (!window.confirm(`Remove the review from ${review.name || "this reviewer"}?`)) return;
+  state.reviews = state.reviews.filter((item) => item.id !== reviewId);
+  saveState();
+  renderReviews();
+  renderReviewEditor();
+  toast("Review removed.");
 }
 
 function switchAdminTab(tabName) {
