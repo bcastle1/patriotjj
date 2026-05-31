@@ -5,6 +5,62 @@ const FLYER_TITLE = "Patriots Jiu-jitsu";
 const PUBLIC_FLYER_IMAGE = "assets/patriot-jj-flyer.png?v=20260530-patriots";
 const STORE_MARK_TEXT = "AHS";
 const STORE_ITEM_TEXT = "Patriots Jiu-jitsu";
+const STORE_CATALOG_VERSION = "20260531-shirt-store";
+const T_SHIRT_PRICE = 22;
+const STORE_SHIRT_ITEMS = [
+  {
+    id: "shirt-navy",
+    name: "Navy T-shirt",
+    category: "T-shirt",
+    price: T_SHIRT_PRICE,
+    active: true,
+    description: "Patriots Jiu-jitsu navy T-shirt.",
+    productColor: "#071d49",
+    logoText: "T-shirt",
+    slogan: STORE_ITEM_TEXT,
+    imageUrl: "assets/store-shirt-navy.png?v=20260531-shirt-store",
+    imageSource: "Recent navy shirt mockup"
+  },
+  {
+    id: "shirt-red",
+    name: "Red T-shirt",
+    category: "T-shirt",
+    price: T_SHIRT_PRICE,
+    active: true,
+    description: "Patriots Jiu-jitsu red T-shirt.",
+    productColor: "#a01820",
+    logoText: "T-shirt",
+    slogan: STORE_ITEM_TEXT,
+    imageUrl: "assets/store-shirt-red.png?v=20260531-shirt-store",
+    imageSource: "Recent red shirt mockup"
+  },
+  {
+    id: "shirt-white",
+    name: "White T-shirt",
+    category: "T-shirt",
+    price: T_SHIRT_PRICE,
+    active: true,
+    description: "Patriots Jiu-jitsu white T-shirt.",
+    productColor: "#f2f2ec",
+    logoText: "T-shirt",
+    slogan: STORE_ITEM_TEXT,
+    imageUrl: "assets/store-shirt-white.png?v=20260531-shirt-store",
+    imageSource: "Recent white shirt mockup"
+  },
+  {
+    id: "shirt-black",
+    name: "Black T-shirt",
+    category: "T-shirt",
+    price: T_SHIRT_PRICE,
+    active: true,
+    description: "Patriots Jiu-jitsu black T-shirt.",
+    productColor: "#111111",
+    logoText: "T-shirt",
+    slogan: STORE_ITEM_TEXT,
+    imageUrl: "assets/store-shirt-black.png?v=20260531-shirt-store",
+    imageSource: "Recent black shirt mockup"
+  }
+];
 const OLD_PROGRAM_NAMES = [
   "American Heritage Patriots Jiu-Jitsu",
   "American Heritage Patriots Jiu-jitsu",
@@ -104,6 +160,7 @@ const sessionMedia = new Map();
 
 function seedState() {
   return {
+    storeCatalogVersion: STORE_CATALOG_VERSION,
     settings: {
       contactEmail: "info@patriotjj.com",
       phone: "",
@@ -215,60 +272,7 @@ function seedState() {
         receiptSent: false
       }
     ],
-    storeItems: [
-      {
-        id: "shirt-camp",
-        name: "Camp T-shirt",
-        category: "Shirt",
-        price: 22,
-        active: true,
-        description: "Patriots Jiu-jitsu navy camp shirt.",
-        productColor: "#071d49",
-        logoText: STORE_MARK_TEXT,
-        slogan: STORE_ITEM_TEXT,
-        imageUrl: "",
-        imageSource: "Generated mockup"
-      },
-      {
-        id: "rashguard",
-        name: "Training Rash Guard",
-        category: "Training",
-        price: 42,
-        active: true,
-        description: "Lightweight short-sleeve rash guard.",
-        productColor: "#d71920",
-        logoText: "PATRIOTS",
-        slogan: STORE_ITEM_TEXT,
-        imageUrl: "",
-        imageSource: "Generated mockup"
-      },
-      {
-        id: "hoodie",
-        name: "Patriot Hoodie",
-        category: "Outerwear",
-        price: 48,
-        active: true,
-        description: "Red, white, and navy pullover hoodie.",
-        productColor: "#0d3f88",
-        logoText: STORE_MARK_TEXT,
-        slogan: STORE_ITEM_TEXT,
-        imageUrl: "",
-        imageSource: "Generated mockup"
-      },
-      {
-        id: "hat",
-        name: "Shield Hat",
-        category: "Accessory",
-        price: 24,
-        active: true,
-        description: "Structured cap with Patriots Jiu-jitsu mark.",
-        productColor: "#071d49",
-        logoText: STORE_MARK_TEXT,
-        slogan: "American Fork Patriots",
-        imageUrl: "",
-        imageSource: "Generated mockup"
-      }
-    ],
+    storeItems: defaultStoreItems(),
     storeOrders: [],
     faqs: [
       {
@@ -368,8 +372,9 @@ function mergeState(base, incoming) {
   return {
     ...base,
     ...incoming,
+    storeCatalogVersion: STORE_CATALOG_VERSION,
     settings: normalizeSettings({ ...base.settings, ...(incoming.settings || {}) }),
-    storeItems: (incoming.storeItems || base.storeItems).map(normalizeStoreItem),
+    storeItems: normalizeStoreCatalog(base.storeItems, incoming.storeItems, incoming.storeCatalogVersion),
     faqs: mergeDefaultRows(base.faqs, incoming.faqs),
     media: {
       photos: (incoming.media?.photos || base.media.photos).map(normalizeMediaItem),
@@ -424,6 +429,27 @@ function normalizeSettings(settings) {
   normalized.waiverBody = addMediaReleaseToWaiver(normalized.waiverBody);
   normalized.waiverBody = updateWaiverSignatureScope(normalized.waiverBody);
   return normalized;
+}
+
+function defaultStoreItems() {
+  return STORE_SHIRT_ITEMS.map((item) => ({ ...item }));
+}
+
+function normalizeStoreCatalog(defaultItems, incomingItems, incomingVersion) {
+  if (incomingVersion !== STORE_CATALOG_VERSION) {
+    return defaultItems.map(normalizeStoreItem);
+  }
+  const defaultIds = new Set(defaultItems.map((item) => item.id));
+  const incoming = Array.isArray(incomingItems) ? incomingItems : [];
+  const incomingIds = new Set(incoming.map((item) => item.id));
+  const hasExpectedCatalog = defaultItems.every((item) => incomingIds.has(item.id));
+  if (!hasExpectedCatalog) {
+    return defaultItems.map(normalizeStoreItem);
+  }
+  return [
+    ...incoming.filter((item) => defaultIds.has(item.id)).map(normalizeStoreItem),
+    ...defaultItems.filter((item) => !incomingIds.has(item.id)).map(normalizeStoreItem)
+  ];
 }
 
 function normalizeStoreItem(item) {
