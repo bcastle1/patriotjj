@@ -142,6 +142,11 @@ const refs = {
   faqEditor: $("#faq-editor"),
   addFaq: $("#add-faq"),
   reviewEditor: $("#review-editor"),
+  addParticipant: $("#add-participant"),
+  participantModal: $("#participant-modal"),
+  participantForm: $("#participant-form"),
+  manualEvent: $("#manual-event"),
+  manualTrack: $("#manual-track"),
   exportParticipants: $("#export-participants"),
   paymentModal: $("#payment-modal"),
   paymentTitle: $("#payment-title"),
@@ -614,6 +619,18 @@ function bindEvents() {
     sessionStorage.removeItem("patriotJjAdmin");
     renderAdminGate();
   });
+  refs.addParticipant.addEventListener("click", openParticipantModal);
+  refs.manualEvent.addEventListener("change", () => {
+    renderManualTrackOptions();
+    syncManualPaymentDefaults();
+  });
+  refs.manualTrack.addEventListener("change", syncManualPaymentDefaults);
+  refs.participantForm.addEventListener("input", (event) => {
+    if (["firstName", "lastName", "paymentMemo", "paymentAmount"].includes(event.target.name)) {
+      syncManualPaymentDefaults(event.target);
+    }
+  });
+  refs.participantForm.addEventListener("submit", handleManualParticipantSubmit);
   refs.exportParticipants.addEventListener("click", exportParticipantsCsv);
   refs.participantSearch.addEventListener("input", renderParticipants);
   refs.participantAgeFilter.addEventListener("change", renderParticipants);
@@ -770,6 +787,7 @@ function renderSignupOptions() {
     .join("");
   refs.signupEvent.value = selectedEventId;
   renderTrackOptions();
+  renderManualParticipantOptions();
   renderParticipantEventFilter();
   updateSignupPrice();
   renderSignupWaiverPreview();
@@ -780,6 +798,29 @@ function renderTrackOptions() {
   refs.signupTrack.innerHTML = (event?.tracks || [])
     .map((track) => `<option value="${track.id}">${escapeHtml(track.label)} - ${escapeHtml(track.time)} - $${Number(track.price || 0)}</option>`)
     .join("");
+}
+
+function renderManualParticipantOptions() {
+  if (!refs.manualEvent || !refs.manualTrack) return;
+  refs.manualEvent.innerHTML = state.events
+    .map((event) => `<option value="${event.id}">${escapeHtml(event.title)} - ${escapeHtml(event.dateLine)}</option>`)
+    .join("");
+  refs.manualEvent.value = state.events.some((event) => event.id === selectedEventId)
+    ? selectedEventId
+    : state.events[0]?.id || "";
+  renderManualTrackOptions();
+}
+
+function renderManualTrackOptions() {
+  if (!refs.manualEvent || !refs.manualTrack) return;
+  const event = state.events.find((item) => item.id === refs.manualEvent.value) || state.events[0];
+  const previousTrack = refs.manualTrack.value;
+  refs.manualTrack.innerHTML = (event?.tracks || [])
+    .map((track) => `<option value="${track.id}">${escapeHtml(track.label)} - ${escapeHtml(track.time)} - $${Number(track.price || 0)}</option>`)
+    .join("");
+  refs.manualTrack.value = (event?.tracks || []).some((track) => track.id === previousTrack)
+    ? previousTrack
+    : event?.tracks[0]?.id || "";
 }
 
 function updateSignupPrice() {
@@ -837,6 +878,8 @@ function handleSignup(event) {
     age,
     gender: clean(formData.get("gender")),
     guardianName,
+    guardianEmail: clean(formData.get("guardianEmail")),
+    guardianPhone: clean(formData.get("guardianPhone")),
     address: clean(formData.get("address")),
     email: clean(formData.get("email")),
     phone: clean(formData.get("phone")),
@@ -878,6 +921,123 @@ function handleSignup(event) {
   updateSignupPrice();
   renderSignupWaiverPreview();
   toast("Signup saved. Venmo checkout is ready.");
+}
+
+function openParticipantModal() {
+  if (!state.events.length) {
+    toast("Add a camp session before adding participants.");
+    return;
+  }
+  refs.participantForm.reset();
+  refs.participantForm.elements.signedUpAt.value = localDateTimeValue();
+  refs.participantForm.elements.waiverSignedAt.value = localDateTimeValue();
+  refs.participantForm.elements.paymentAmount.dataset.manual = "";
+  refs.participantForm.elements.paymentMemo.dataset.manual = "";
+  renderManualParticipantOptions();
+  syncManualPaymentDefaults();
+  refs.participantModal.showModal();
+  refreshIcons();
+}
+
+function syncManualPaymentDefaults(changedField) {
+  if (!refs.participantForm) return;
+  if (changedField?.name === "paymentAmount") changedField.dataset.manual = "true";
+  if (changedField?.name === "paymentMemo") changedField.dataset.manual = "true";
+
+  const elements = refs.participantForm.elements;
+  const amountField = elements.paymentAmount;
+  const memoField = elements.paymentMemo;
+  const eventId = clean(elements.eventId.value);
+  const trackId = clean(elements.trackId.value);
+  const price = priceFor(eventId, trackId);
+  if (!amountField.dataset.manual || !amountField.value) {
+    amountField.value = Number(price || 0).toFixed(2);
+  }
+
+  const participant = {
+    firstName: clean(elements.firstName.value),
+    lastName: clean(elements.lastName.value),
+    eventId,
+    trackId
+  };
+  const memo = paymentMemo(participant);
+  if (!memoField.dataset.manual || !memoField.value) {
+    memoField.value = memo;
+  }
+}
+
+function handleManualParticipantSubmit(event) {
+  event.preventDefault();
+  const formData = new FormData(refs.participantForm);
+  const age = Number(formData.get("age"));
+  const guardianName = clean(formData.get("guardianName"));
+  if (age < 18 && !guardianName) {
+    toast("Parent/guardian name is required for minors.");
+    refs.participantForm.elements.guardianName.focus();
+    return;
+  }
+
+  const participant = {
+    id: makeId("participant"),
+    firstName: clean(formData.get("firstName")),
+    lastName: clean(formData.get("lastName")),
+    age,
+    gender: clean(formData.get("gender")),
+    guardianName,
+    guardianEmail: clean(formData.get("guardianEmail")),
+    guardianPhone: clean(formData.get("guardianPhone")),
+    address: clean(formData.get("address")),
+    email: clean(formData.get("email")),
+    phone: clean(formData.get("phone")),
+    eventId: clean(formData.get("eventId")),
+    trackId: clean(formData.get("trackId")),
+    shirtSize: clean(formData.get("shirtSize")),
+    notes: clean(formData.get("notes")),
+    signedUpAt: localDateTimeToIso(formData.get("signedUpAt")) || new Date().toISOString(),
+    manualEntry: true
+  };
+
+  if (formData.get("waiverStatus") === "signed") {
+    const signerName = clean(formData.get("waiverSignerName")) || guardianName || fullName(participant);
+    const signerRole = clean(formData.get("waiverSignerRole")) || (age < 18 ? "Parent" : "Self");
+    if (age < 18 && signerRole === "Self") {
+      toast("A parent or guardian must be the waiver signer for minors.");
+      refs.participantForm.elements.waiverSignerRole.focus();
+      return;
+    }
+    participant.waiver = createSignedWaiver(participant, {
+      signerName,
+      signerRole,
+      electronicConsent: true,
+      agreement: true,
+      signedAt: localDateTimeToIso(formData.get("waiverSignedAt")) || participant.signedUpAt,
+      recordNotice: `Manual waiver record entered in the ${PROGRAM_NAME} admin dashboard.`
+    });
+  }
+
+  const paymentStatus = clean(formData.get("paymentStatus"));
+  if (paymentStatus !== "none") {
+    const paymentAmount = clean(formData.get("paymentAmount"));
+    const amount = paymentAmount === "" ? priceFor(participant.eventId, participant.trackId) : Number(paymentAmount);
+    state.payments.unshift({
+      id: makeId("payment"),
+      participantId: participant.id,
+      orderId: "",
+      date: new Date().toISOString(),
+      amount: Number.isFinite(amount) ? amount : 0,
+      memo: clean(formData.get("paymentMemo")) || paymentMemo(participant),
+      method: clean(formData.get("paymentMethod")) || "Manual",
+      status: paymentStatus === "paid" ? "paid" : "pending",
+      receiptSent: paymentStatus === "paid"
+    });
+  }
+
+  state.participants.unshift(participant);
+  selectedParticipantId = participant.id;
+  saveState();
+  renderAdmin();
+  refs.participantModal.close();
+  toast("Participant added manually.");
 }
 
 function openPaymentModal(checkout) {
@@ -1104,7 +1264,9 @@ function renderParticipants() {
       fullName(participant),
       participant.email,
       participant.phone,
-      participant.guardianName,
+      parentName(participant),
+      parentEmail(participant),
+      parentPhone(participant),
       participant.address,
       participant.shirtSize
     ].join(" ").toLowerCase();
@@ -1123,11 +1285,11 @@ function renderParticipants() {
       const paymentState = participantPaymentState(participant.id);
       return `
         <tr class="clickable-row" data-participant-id="${participant.id}">
-          <td><strong>${escapeHtml(fullName(participant))}</strong><br>${escapeHtml(participant.email)}</td>
+          <td><strong>${escapeHtml(fullName(participant))}</strong><br>${escapeHtml(participantContactEmail(participant) || "No email")}</td>
           <td>${Number(participant.age || 0)}</td>
           <td>${escapeHtml(event?.title || "Unknown")}<br>${escapeHtml(trackLabel(participant.eventId, participant.trackId))}</td>
           <td>${escapeHtml(participant.shirtSize || "N/A")}</td>
-          <td>${escapeHtml(participant.phone)}</td>
+          <td>${escapeHtml(participantContactPhone(participant) || "N/A")}${clean(participant.phone) && parentPhone(participant) && parentPhone(participant) !== clean(participant.phone) ? `<br><span class="muted-cell">Parent: ${escapeHtml(parentPhone(participant))}</span>` : ""}</td>
           <td><span class="status-pill ${paymentState}">${paymentState}</span></td>
           <td>
             ${participant.waiver ? `
@@ -1161,10 +1323,12 @@ function renderParticipantDetail() {
       <div><dt>Signed up</dt><dd>${formatDateTime(participant.signedUpAt)}</dd></div>
       <div><dt>Age</dt><dd>${Number(participant.age || 0)}</dd></div>
       <div><dt>Gender</dt><dd>${escapeHtml(participant.gender)}</dd></div>
-      <div><dt>Guardian</dt><dd>${escapeHtml(participant.guardianName || "N/A")}</dd></div>
+      <div><dt>Parent/guardian</dt><dd>${escapeHtml(parentName(participant) || "N/A")}</dd></div>
+      <div><dt>Parent email</dt><dd>${escapeHtml(parentEmail(participant) || "N/A")}</dd></div>
+      <div><dt>Parent phone</dt><dd>${escapeHtml(parentPhone(participant) || "N/A")}</dd></div>
       <div><dt>Address</dt><dd>${escapeHtml(participant.address)}</dd></div>
-      <div><dt>Phone</dt><dd>${escapeHtml(participant.phone)}</dd></div>
-      <div><dt>Email</dt><dd>${escapeHtml(participant.email)}</dd></div>
+      <div><dt>Participant phone</dt><dd>${escapeHtml(participant.phone || "N/A")}</dd></div>
+      <div><dt>Participant email</dt><dd>${escapeHtml(participant.email || "N/A")}</dd></div>
       <div><dt>Session</dt><dd>${escapeHtml(eventTitle(participant.eventId))}</dd></div>
       <div><dt>Track</dt><dd>${escapeHtml(trackLabel(participant.eventId, participant.trackId))}</dd></div>
       <div><dt>Camp T-shirt</dt><dd>${escapeHtml(participant.shirtSize || "N/A")}</dd></div>
@@ -1202,9 +1366,28 @@ function renderParticipantDetail() {
 }
 
 function markParticipantPaid(participantId) {
+  const participant = state.participants.find((item) => item.id === participantId);
   const payment = state.payments.find((item) => item.participantId === participantId && item.status !== "paid");
   if (!payment) {
-    toast("No pending payment for this participant.");
+    const hasPaymentRecord = state.payments.some((item) => item.participantId === participantId);
+    if (hasPaymentRecord || !participant) {
+      toast("No pending payment for this participant.");
+      return;
+    }
+    state.payments.unshift({
+      id: makeId("payment"),
+      participantId,
+      orderId: "",
+      date: new Date().toISOString(),
+      amount: priceFor(participant.eventId, participant.trackId),
+      memo: paymentMemo(participant),
+      method: "Manual",
+      status: "paid",
+      receiptSent: true
+    });
+    saveState();
+    renderAdmin();
+    toast("Participant payment marked paid.");
     return;
   }
   payment.status = "paid";
@@ -1238,7 +1421,7 @@ function signedWaiverHtml(participant) {
     <dl class="detail-list waiver-meta">
       <div><dt>Participant</dt><dd>${escapeHtml(waiver.participantName || fullName(participant))}</dd></div>
       <div><dt>Age</dt><dd>${Number(waiver.participantAge || participant.age || 0)}</dd></div>
-      <div><dt>Guardian</dt><dd>${escapeHtml(waiver.guardianName || participant.guardianName || "N/A")}</dd></div>
+      <div><dt>Parent/guardian</dt><dd>${escapeHtml(waiver.guardianName || parentName(participant) || "N/A")}</dd></div>
       <div><dt>Session</dt><dd>${escapeHtml(waiver.eventTitle || eventTitle(participant.eventId))}</dd></div>
       <div><dt>Track</dt><dd>${escapeHtml(waiver.trackLabel || trackLabel(participant.eventId, participant.trackId))}</dd></div>
       <div><dt>Signer</dt><dd>${escapeHtml(waiver.signerName)} (${escapeHtml(waiver.signerRole)})</dd></div>
@@ -1295,7 +1478,7 @@ function printSignedWaiver(participantId) {
         <dl>
           <div><dt>Participant</dt><dd>${escapeHtml(participant.waiver.participantName || fullName(participant))}</dd></div>
           <div><dt>Age</dt><dd>${Number(participant.waiver.participantAge || participant.age || 0)}</dd></div>
-          <div><dt>Guardian</dt><dd>${escapeHtml(participant.waiver.guardianName || participant.guardianName || "N/A")}</dd></div>
+          <div><dt>Parent/guardian</dt><dd>${escapeHtml(participant.waiver.guardianName || parentName(participant) || "N/A")}</dd></div>
           <div><dt>Session</dt><dd>${escapeHtml(participant.waiver.eventTitle || eventTitle(participant.eventId))}</dd></div>
           <div><dt>Track</dt><dd>${escapeHtml(participant.waiver.trackLabel || trackLabel(participant.eventId, participant.trackId))}</dd></div>
           <div><dt>Signed</dt><dd>${formatDateTime(participant.waiver.signedAt)}</dd></div>
@@ -2303,13 +2486,15 @@ function switchAdminTab(tabName) {
 
 function exportParticipantsCsv() {
   const rows = [
-    ["First Name", "Last Name", "Age", "Gender", "Guardian", "Address", "Email", "Phone", "Session", "Track", "Camp T-shirt Size", "Signed Up", "Payment", "Waiver Signed", "Waiver Signer"],
+    ["First Name", "Last Name", "Age", "Gender", "Parent/Guardian Name", "Parent/Guardian Email", "Parent/Guardian Phone", "Address", "Participant Email", "Participant Phone", "Session", "Track", "Camp T-shirt Size", "Signed Up", "Payment", "Waiver Signed", "Waiver Signer"],
     ...state.participants.map((participant) => [
       participant.firstName,
       participant.lastName,
       participant.age,
       participant.gender,
-      participant.guardianName,
+      parentName(participant),
+      parentEmail(participant),
+      parentPhone(participant),
       participant.address,
       participant.email,
       participant.phone,
@@ -2356,7 +2541,7 @@ function paymentMemo(participant) {
 }
 
 function createSignedWaiver(participant, signatureData) {
-  const signedAt = new Date().toISOString();
+  const signedAt = signatureData.signedAt || new Date().toISOString();
   const waiverData = {
     participantName: fullName(participant),
     signerName: signatureData.signerName,
@@ -2376,11 +2561,11 @@ function createSignedWaiver(participant, signatureData) {
     signedAt,
     participantName: fullName(participant),
     participantAge: participant.age,
-    guardianName: participant.guardianName,
+    guardianName: parentName(participant),
     eventTitle: eventTitle(participant.eventId),
     trackLabel: trackLabel(participant.eventId, participant.trackId),
     templateVersion: "2026-05-26-static-template",
-    recordNotice: `Signed electronically by typed name in the ${PROGRAM_NAME} signup app.`
+    recordNotice: signatureData.recordNotice || `Signed electronically by typed name in the ${PROGRAM_NAME} signup app.`
   };
 }
 
@@ -2404,6 +2589,26 @@ function participantPaymentState(participantId) {
 
 function fullName(participant) {
   return `${participant.firstName || ""} ${participant.lastName || ""}`.trim();
+}
+
+function parentName(participant) {
+  return clean(participant.guardianName);
+}
+
+function parentEmail(participant) {
+  return clean(participant.guardianEmail);
+}
+
+function parentPhone(participant) {
+  return clean(participant.guardianPhone);
+}
+
+function participantContactEmail(participant) {
+  return clean(participant.email) || parentEmail(participant);
+}
+
+function participantContactPhone(participant) {
+  return clean(participant.phone) || parentPhone(participant);
 }
 
 function venmoProfileUrl() {
@@ -2430,7 +2635,7 @@ function receiptMailto(participant) {
   const body = encodeURIComponent(
     `Hi ${fullName(participant)},\n\nThank you for registering for ${eventTitle(participant.eventId)}.\nCamp T-shirt size: ${participant.shirtSize || "N/A"}.\nPayment recorded: $${paidTotal.toFixed(2)}.\n\n${PROGRAM_NAME}`
   );
-  return `mailto:${participant.email}?subject=${subject}&body=${body}`;
+  return `mailto:${encodeURIComponent(participantContactEmail(participant))}?subject=${subject}&body=${body}`;
 }
 
 function formatDateTime(value) {
@@ -2442,6 +2647,20 @@ function formatDateTime(value) {
     hour: "numeric",
     minute: "2-digit"
   }).format(new Date(value));
+}
+
+function localDateTimeValue(value = new Date()) {
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const offsetDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return offsetDate.toISOString().slice(0, 16);
+}
+
+function localDateTimeToIso(value) {
+  const cleaned = clean(value);
+  if (!cleaned) return "";
+  const date = new Date(cleaned);
+  return Number.isNaN(date.getTime()) ? "" : date.toISOString();
 }
 
 function clean(value) {

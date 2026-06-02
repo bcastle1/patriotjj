@@ -1282,6 +1282,12 @@ tr.clickable-row:hover td {
   background: #ffffff;
 }
 
+.muted-cell {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
 .detail-list {
   display: grid;
   gap: 8px;
@@ -1571,6 +1577,23 @@ tr.clickable-row:hover td {
 
 .waiver-modal {
   width: min(900px, calc(100vw - 24px));
+}
+
+.wide-modal {
+  width: min(980px, calc(100vw - 24px));
+}
+
+.manual-section {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #f8fafc;
+}
+
+.manual-section h3 {
+  font-size: 1.05rem;
 }
 
 .signed-waiver {

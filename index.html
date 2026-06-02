@@ -9,7 +9,7 @@
       content="Patriots Jiu-jitsu summer camp signup, Venmo payment, team store, reviews, Q&A, and admin management app."
     >
     <link rel="icon" href="assets/ahs-patriots-mark.png">
-    <link rel="stylesheet" href="styles.css?v=20260531-admin-footer-link">
+    <link rel="stylesheet" href="styles.css?v=20260602-manual-participants">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
   </head>
   <body>
@@ -173,7 +173,9 @@
                   <option>Prefer not to say</option>
                 </select>
               </label>
-              <label class="full-field">Guardian name <span class="field-hint">(required if under 18)</span><input name="guardianName" autocomplete="name"></label>
+              <label class="full-field">Parent/guardian name <span class="field-hint">(required if under 18)</span><input name="guardianName" autocomplete="name"></label>
+              <label>Parent/guardian email<input name="guardianEmail" type="email" autocomplete="email"></label>
+              <label>Parent/guardian phone<input name="guardianPhone" type="tel" autocomplete="tel"></label>
               <label class="full-field">Street address<input name="address" autocomplete="street-address" required></label>
               <label>Email<input name="email" type="email" autocomplete="email" required></label>
               <label>Phone<input name="phone" type="tel" autocomplete="tel" required></label>
@@ -355,8 +357,12 @@
 
             <div class="metric-grid" id="admin-metrics"></div>
 
-            <div class="admin-tabs" role="tablist" aria-label="Admin tools">
+            <div class="admin-tabs" aria-label="Admin tools">
               <button class="tab-button active" type="button" data-admin-tab="participants"><i data-lucide="users"></i>Participants</button>
+              <button class="secondary-button" type="button" id="add-participant">
+                <i data-lucide="user-plus"></i>
+                Add Participants
+              </button>
               <button class="tab-button" type="button" data-admin-tab="payments"><i data-lucide="receipt"></i>Payments</button>
               <button class="tab-button" type="button" data-admin-tab="events"><i data-lucide="calendar-plus"></i>Events</button>
               <button class="tab-button" type="button" data-admin-tab="store"><i data-lucide="shirt"></i>Store</button>
@@ -599,6 +605,109 @@
       </form>
     </dialog>
 
+    <dialog class="modal wide-modal" id="participant-modal">
+      <form method="dialog" class="modal-card" id="participant-form">
+        <button class="icon-close" type="button" data-close-modal aria-label="Close">x</button>
+        <div class="section-heading tight">
+          <p class="eyebrow">Manual entry</p>
+          <h2>Add participant.</h2>
+        </div>
+
+        <section class="manual-section">
+          <h3>Participant</h3>
+          <div class="form-grid two">
+            <label>First name<input name="firstName" autocomplete="given-name" required></label>
+            <label>Last name<input name="lastName" autocomplete="family-name" required></label>
+            <label>Age<input name="age" type="number" min="4" max="99" required></label>
+            <label>Gender
+              <select name="gender" required>
+                <option value="">Select</option>
+                <option>Female</option>
+                <option>Male</option>
+                <option>Prefer not to say</option>
+              </select>
+            </label>
+            <label>Participant email<input name="email" type="email" autocomplete="email"></label>
+            <label>Participant phone<input name="phone" type="tel" autocomplete="tel"></label>
+            <label class="full-field">Parent/guardian name <span class="field-hint">(required if under 18)</span><input name="guardianName" autocomplete="name"></label>
+            <label>Parent/guardian email<input name="guardianEmail" type="email" autocomplete="email"></label>
+            <label>Parent/guardian phone<input name="guardianPhone" type="tel" autocomplete="tel"></label>
+            <label class="full-field">Street address<input name="address" autocomplete="street-address"></label>
+            <label>Camp session<select name="eventId" id="manual-event" required></select></label>
+            <label>Grade group<select name="trackId" id="manual-track" required></select></label>
+            <label>Camp T-shirt size
+              <select name="shirtSize" required>
+                <option value="">Select</option>
+                <option>Youth XS</option>
+                <option>Youth S</option>
+                <option>Youth M</option>
+                <option>Youth L</option>
+                <option>Youth XL</option>
+                <option>Adult XS</option>
+                <option>Adult S</option>
+                <option>Adult M</option>
+                <option>Adult L</option>
+                <option>Adult XL</option>
+                <option>Adult 2XL</option>
+                <option>Adult 3XL</option>
+                <option>Adult 4XL</option>
+                <option>Adult 5XL</option>
+              </select>
+            </label>
+            <label>Signup date<input name="signedUpAt" type="datetime-local"></label>
+            <label class="full-field">Notes<textarea name="notes" rows="3" placeholder="Medical, allergy, learning, or admin notes"></textarea></label>
+          </div>
+        </section>
+
+        <section class="manual-section">
+          <h3>Payment</h3>
+          <div class="form-grid two">
+            <label>Payment status
+              <select name="paymentStatus">
+                <option value="pending">Pending</option>
+                <option value="paid">Paid</option>
+                <option value="none">No payment record</option>
+              </select>
+            </label>
+            <label>Payment amount<input name="paymentAmount" type="number" min="0" step="0.01"></label>
+            <label>Payment method<input name="paymentMethod" value="Venmo"></label>
+            <label class="full-field">Payment memo<input name="paymentMemo"></label>
+          </div>
+        </section>
+
+        <section class="manual-section">
+          <h3>Waiver</h3>
+          <div class="form-grid two">
+            <label>Waiver status
+              <select name="waiverStatus">
+                <option value="missing">Not on file</option>
+                <option value="signed">Signed on file</option>
+              </select>
+            </label>
+            <label>Signer name<input name="waiverSignerName" autocomplete="name"></label>
+            <label>Relationship to participant
+              <select name="waiverSignerRole">
+                <option value="">Select</option>
+                <option>Self</option>
+                <option>Parent</option>
+                <option>Legal guardian</option>
+                <option>Other authorized adult</option>
+              </select>
+            </label>
+            <label>Waiver signed date<input name="waiverSignedAt" type="datetime-local"></label>
+          </div>
+        </section>
+
+        <div class="modal-actions">
+          <button class="ghost-button" type="button" data-close-modal>Cancel</button>
+          <button class="primary-button" type="submit">
+            <i data-lucide="save"></i>
+            Save Participant
+          </button>
+        </div>
+      </form>
+    </dialog>
+
     <dialog class="modal" id="review-modal">
       <form method="dialog" class="modal-card" id="review-form">
         <button class="icon-close" type="button" data-close-modal aria-label="Close">x</button>
@@ -635,6 +744,6 @@
     </dialog>
 
     <div class="toast" id="toast" role="status"></div>
-    <script src="app.js?v=20260531-empty-admin-records"></script>
+    <script src="app.js?v=20260602-manual-participants"></script>
   </body>
 </html>
