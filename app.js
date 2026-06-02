@@ -145,6 +145,9 @@ const refs = {
   addParticipant: $("#add-participant"),
   participantModal: $("#participant-modal"),
   participantForm: $("#participant-form"),
+  participantModalEyebrow: $("#participant-modal-eyebrow"),
+  participantModalTitle: $("#participant-modal-title"),
+  participantSubmitLabel: $("#participant-submit-label"),
   manualAge: $("#manual-age"),
   manualEvent: $("#manual-event"),
   manualTrack: $("#manual-track"),
@@ -167,6 +170,7 @@ const refs = {
 let state = loadState();
 let selectedEventId = state.events[0]?.id || "";
 let selectedParticipantId = state.participants[0]?.id || "";
+let editingParticipantId = "";
 let pendingCheckout = null;
 const sessionMedia = new Map();
 
@@ -638,6 +642,12 @@ function bindEvents() {
   refs.participantEventFilter.addEventListener("change", renderParticipants);
   refs.participantPaymentFilter.addEventListener("change", renderParticipants);
   refs.participantsTable.addEventListener("click", (event) => {
+    const editButton = event.target.closest("[data-edit-participant]");
+    if (editButton) {
+      event.stopPropagation();
+      openParticipantModal(editButton.dataset.editParticipant);
+      return;
+    }
     const waiverButton = event.target.closest("[data-view-waiver]");
     if (waiverButton) {
       event.stopPropagation();
@@ -801,7 +811,7 @@ function renderTrackOptions() {
     .join("");
 }
 
-function renderManualParticipantOptions() {
+function renderManualParticipantOptions(preferredEventId = "unknown", preferredTrackId = "unknown") {
   if (!refs.manualEvent || !refs.manualTrack || !refs.manualAge) return;
   refs.manualAge.innerHTML = [
     `<option value="unknown">Unknown</option>`,
@@ -815,11 +825,11 @@ function renderManualParticipantOptions() {
     ...state.events
     .map((event) => `<option value="${event.id}">${escapeHtml(event.title)} - ${escapeHtml(event.dateLine)}</option>`)
   ].join("");
-  refs.manualEvent.value = "unknown";
-  renderManualTrackOptions();
+  refs.manualEvent.value = state.events.some((event) => event.id === preferredEventId) ? preferredEventId : "unknown";
+  renderManualTrackOptions(preferredTrackId);
 }
 
-function renderManualTrackOptions() {
+function renderManualTrackOptions(preferredTrackId = refs.manualTrack.value) {
   if (!refs.manualEvent || !refs.manualTrack) return;
   if (refs.manualEvent.value === "unknown") {
     refs.manualTrack.innerHTML = `<option value="unknown">Unknown grade group</option>`;
@@ -827,13 +837,14 @@ function renderManualTrackOptions() {
     return;
   }
   const event = state.events.find((item) => item.id === refs.manualEvent.value) || state.events[0];
-  const previousTrack = refs.manualTrack.value;
-  refs.manualTrack.innerHTML = (event?.tracks || [])
+  refs.manualTrack.innerHTML = [
+    `<option value="unknown">Unknown grade group</option>`,
+    ...(event?.tracks || [])
     .map((track) => `<option value="${track.id}">${escapeHtml(track.label)} - ${escapeHtml(track.time)} - $${Number(track.price || 0)}</option>`)
-    .join("");
-  refs.manualTrack.value = (event?.tracks || []).some((track) => track.id === previousTrack)
-    ? previousTrack
-    : event?.tracks[0]?.id || "";
+  ].join("");
+  refs.manualTrack.value = (event?.tracks || []).some((track) => track.id === preferredTrackId)
+    ? preferredTrackId
+    : "unknown";
 }
 
 function updateSignupPrice() {
@@ -936,20 +947,49 @@ function handleSignup(event) {
   toast("Signup saved. Venmo checkout is ready.");
 }
 
-function openParticipantModal() {
-  if (!state.events.length) {
-    toast("Add a camp session before adding participants.");
-    return;
-  }
+function openParticipantModal(participantId = "") {
+  const participant = participantId ? state.participants.find((item) => item.id === participantId) : null;
+  editingParticipantId = participant?.id || "";
   refs.participantForm.reset();
-  refs.participantForm.elements.signedUpAt.value = localDateTimeValue();
-  refs.participantForm.elements.waiverSignedAt.value = localDateTimeValue();
-  refs.participantForm.elements.paymentAmount.dataset.manual = "";
-  refs.participantForm.elements.paymentMemo.dataset.manual = "";
-  renderManualParticipantOptions();
+  refs.participantForm.dataset.mode = editingParticipantId ? "edit" : "add";
+  refs.participantModalEyebrow.textContent = editingParticipantId ? "Edit entry" : "Manual entry";
+  refs.participantModalTitle.textContent = editingParticipantId ? "Edit participant." : "Add participant.";
+  refs.participantSubmitLabel.textContent = editingParticipantId ? "Save Changes" : "Save Participant";
+  renderManualParticipantOptions(participant?.eventId || "unknown", participant?.trackId || "unknown");
+  fillParticipantForm(participant);
   syncManualPaymentDefaults();
   refs.participantModal.showModal();
   refreshIcons();
+}
+
+function fillParticipantForm(participant) {
+  const elements = refs.participantForm.elements;
+  const payment = participant ? state.payments.find((item) => item.participantId === participant.id) : null;
+  elements.firstName.value = participant?.firstName || "";
+  elements.lastName.value = participant?.lastName || "";
+  elements.age.value = isKnownAge(participant?.age) ? String(Number(participant.age)) : "unknown";
+  setSelectValue(elements.gender, participant?.gender || "Unknown", "Unknown");
+  elements.email.value = participant?.email || "";
+  elements.phone.value = participant?.phone || "";
+  elements.guardianName.value = participant?.guardianName || "";
+  elements.guardianEmail.value = participant?.guardianEmail || "";
+  elements.guardianPhone.value = participant?.guardianPhone || "";
+  elements.address.value = participant?.address || "";
+  setSelectValue(elements.shirtSize, participant?.shirtSize || "Unknown", "Unknown");
+  elements.signedUpAt.value = localDateTimeValue(participant?.signedUpAt || new Date());
+  elements.notes.value = participant?.notes || "";
+
+  elements.paymentStatus.value = participant ? payment?.status || "none" : "pending";
+  elements.paymentAmount.value = payment ? Number(payment.amount || 0).toFixed(2) : "";
+  elements.paymentMethod.value = payment?.method || "Venmo";
+  elements.paymentMemo.value = payment?.memo || "";
+  elements.paymentAmount.dataset.manual = payment ? "true" : "";
+  elements.paymentMemo.dataset.manual = payment ? "true" : "";
+
+  elements.waiverStatus.value = participant?.waiver ? "signed" : "missing";
+  elements.waiverSignerName.value = participant?.waiver?.signerName || "";
+  setSelectValue(elements.waiverSignerRole, participant?.waiver?.signerRole || "", "");
+  elements.waiverSignedAt.value = localDateTimeValue(participant?.waiver?.signedAt || new Date());
 }
 
 function syncManualPaymentDefaults(changedField) {
@@ -982,13 +1022,18 @@ function syncManualPaymentDefaults(changedField) {
 function handleManualParticipantSubmit(event) {
   event.preventDefault();
   const formData = new FormData(refs.participantForm);
+  const existingParticipant = editingParticipantId
+    ? state.participants.find((item) => item.id === editingParticipantId)
+    : null;
+  const previousWaiver = existingParticipant?.waiver;
   const age = normalizeManualAge(formData.get("age"));
   const guardianName = clean(formData.get("guardianName")) || (isKnownAge(age) && Number(age) < 18 ? "Unknown" : "");
   const firstName = clean(formData.get("firstName"));
   const lastName = clean(formData.get("lastName"));
 
   const participant = {
-    id: makeId("participant"),
+    ...(existingParticipant || {}),
+    id: existingParticipant?.id || makeId("participant"),
     firstName: firstName || "Unknown",
     lastName: lastName || "Participant",
     age,
@@ -1007,47 +1052,79 @@ function handleManualParticipantSubmit(event) {
     manualEntry: true
   };
 
-  if (formData.get("waiverStatus") === "signed") {
-    const signerName = clean(formData.get("waiverSignerName")) || guardianName || fullName(participant);
-    const signerRole = clean(formData.get("waiverSignerRole")) || (isKnownAge(age) && Number(age) < 18 ? "Parent" : "Self");
-    if (isKnownAge(age) && Number(age) < 18 && signerRole === "Self") {
-      toast("A parent or guardian must be the waiver signer for minors.");
-      refs.participantForm.elements.waiverSignerRole.focus();
-      return;
-    }
-    participant.waiver = createSignedWaiver(participant, {
-      signerName,
-      signerRole,
-      electronicConsent: true,
-      agreement: true,
-      signedAt: localDateTimeToIso(formData.get("waiverSignedAt")) || participant.signedUpAt,
-      recordNotice: `Manual waiver record entered in the ${PROGRAM_NAME} admin dashboard.`
-    });
-  }
+  if (!applyManualWaiver(participant, formData, previousWaiver)) return;
+  syncManualParticipantPayment(participant, formData);
 
-  const paymentStatus = clean(formData.get("paymentStatus"));
-  if (paymentStatus !== "none") {
-    const paymentAmount = clean(formData.get("paymentAmount"));
-    const amount = paymentAmount === "" ? priceFor(participant.eventId, participant.trackId) : Number(paymentAmount);
-    state.payments.unshift({
-      id: makeId("payment"),
-      participantId: participant.id,
-      orderId: "",
-      date: new Date().toISOString(),
-      amount: Number.isFinite(amount) ? amount : 0,
-      memo: clean(formData.get("paymentMemo")) || paymentMemo(participant),
-      method: clean(formData.get("paymentMethod")) || "Manual",
-      status: paymentStatus === "paid" ? "paid" : "pending",
-      receiptSent: paymentStatus === "paid"
-    });
+  if (existingParticipant) {
+    const index = state.participants.findIndex((item) => item.id === existingParticipant.id);
+    if (index !== -1) state.participants[index] = participant;
+  } else {
+    state.participants.unshift(participant);
   }
-
-  state.participants.unshift(participant);
   selectedParticipantId = participant.id;
   saveState();
   renderAdmin();
   refs.participantModal.close();
-  toast("Participant added manually.");
+  toast(existingParticipant ? "Participant updated." : "Participant added manually.");
+}
+
+function applyManualWaiver(participant, formData, previousWaiver) {
+  if (formData.get("waiverStatus") !== "signed") {
+    delete participant.waiver;
+    return true;
+  }
+
+  const signerName = clean(formData.get("waiverSignerName")) || participant.guardianName || fullName(participant);
+  const signerRole = clean(formData.get("waiverSignerRole")) || (isKnownAge(participant.age) && Number(participant.age) < 18 ? "Parent" : "Self");
+  if (isKnownAge(participant.age) && Number(participant.age) < 18 && signerRole === "Self") {
+    toast("A parent or guardian must be the waiver signer for minors.");
+    refs.participantForm.elements.waiverSignerRole.focus();
+    return false;
+  }
+
+  participant.waiver = createSignedWaiver(participant, {
+    signerName,
+    signerRole,
+    electronicConsent: true,
+    agreement: true,
+    signedAt: localDateTimeToIso(formData.get("waiverSignedAt")) || participant.signedUpAt,
+    recordNotice: `Manual waiver record entered in the ${PROGRAM_NAME} admin dashboard.`
+  });
+  if (previousWaiver?.id) participant.waiver.id = previousWaiver.id;
+  return true;
+}
+
+function syncManualParticipantPayment(participant, formData) {
+  const paymentStatus = clean(formData.get("paymentStatus"));
+  const existingPayment = state.payments.find((payment) => payment.participantId === participant.id);
+  if (paymentStatus === "none") {
+    if (existingPayment) {
+      state.payments = state.payments.filter((payment) => payment.id !== existingPayment.id);
+    }
+    return;
+  }
+
+  const paymentAmount = clean(formData.get("paymentAmount"));
+  const amount = paymentAmount === "" ? priceFor(participant.eventId, participant.trackId) : Number(paymentAmount);
+  const paymentData = {
+    participantId: participant.id,
+    orderId: "",
+    date: existingPayment?.date || new Date().toISOString(),
+    amount: Number.isFinite(amount) ? amount : 0,
+    memo: clean(formData.get("paymentMemo")) || paymentMemo(participant),
+    method: clean(formData.get("paymentMethod")) || "Manual",
+    status: paymentStatus === "paid" ? "paid" : "pending",
+    receiptSent: paymentStatus === "paid"
+  };
+
+  if (existingPayment) {
+    Object.assign(existingPayment, paymentData);
+  } else {
+    state.payments.unshift({
+      id: makeId("payment"),
+      ...paymentData
+    });
+  }
 }
 
 function openPaymentModal(checkout) {
@@ -1310,10 +1387,16 @@ function renderParticipants() {
               <span class="status-pill pending">missing</span>
             `}
           </td>
+          <td>
+            <button class="table-action-button" type="button" data-edit-participant="${participant.id}">
+              <i data-lucide="pencil"></i>
+              Edit
+            </button>
+          </td>
         </tr>
       `;
     })
-    .join("") || `<tr><td colspan="7">No participants match the current filters.</td></tr>`;
+    .join("") || `<tr><td colspan="8">No participants match the current filters.</td></tr>`;
 
   if (!state.participants.some((participant) => participant.id === selectedParticipantId)) {
     selectedParticipantId = state.participants[0]?.id || "";
@@ -1354,6 +1437,10 @@ function renderParticipantDetail() {
       </div>
     `).join("") || "<p>No payments recorded.</p>"}
     <div class="button-row">
+      <button class="secondary-button" type="button" data-detail-edit="${participant.id}">
+        <i data-lucide="pencil"></i>
+        Edit
+      </button>
       <button class="primary-button" type="button" data-mark-paid="${participant.id}">
         <i data-lucide="check-circle-2"></i>
         Mark Paid
@@ -1370,6 +1457,8 @@ function renderParticipantDetail() {
       ` : ""}
     </div>
   `;
+  const editButton = refs.participantDetail.querySelector("[data-detail-edit]");
+  editButton.addEventListener("click", () => openParticipantModal(participant.id));
   const markPaid = refs.participantDetail.querySelector("[data-mark-paid]");
   markPaid.addEventListener("click", () => markParticipantPaid(participant.id));
   const waiverButton = refs.participantDetail.querySelector("[data-detail-waiver]");
@@ -2692,6 +2781,11 @@ function localDateTimeToIso(value) {
 
 function clean(value) {
   return String(value ?? "").trim();
+}
+
+function setSelectValue(select, value, fallback = "") {
+  select.value = value;
+  if (select.value !== String(value)) select.value = fallback;
 }
 
 function makeId(prefix) {
