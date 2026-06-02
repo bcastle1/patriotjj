@@ -9,7 +9,7 @@
       content="Patriots Jiu-jitsu summer camp signup, Venmo payment, team store, reviews, Q&A, and admin management app."
     >
     <link rel="icon" href="assets/ahs-patriots-mark.png">
-    <link rel="stylesheet" href="styles.css?v=20260602-manual-participants">
+    <link rel="stylesheet" href="styles.css?v=20260602-manual-unknowns">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
   </head>
   <body>
@@ -373,7 +373,7 @@
             <div class="admin-panel active" data-panel="participants">
               <div class="toolbar">
                 <label>Search<input id="participant-search" placeholder="Name, email, guardian, phone, shirt size"></label>
-                <label>Age filter<select id="participant-age-filter"><option value="all">All ages</option><option value="minor">Under 18</option><option value="adult">18 and older</option></select></label>
+                <label>Age filter<select id="participant-age-filter"><option value="all">All ages</option><option value="minor">Under 18</option><option value="adult">18 and older</option><option value="unknown">Unknown age</option></select></label>
                 <label>Session<select id="participant-event-filter"><option value="all">All sessions</option></select></label>
                 <label>Payment<select id="participant-payment-filter"><option value="all">All payment states</option><option value="paid">Paid</option><option value="pending">Pending</option></select></label>
               </div>
@@ -616,12 +616,12 @@
         <section class="manual-section">
           <h3>Participant</h3>
           <div class="form-grid two">
-            <label>First name<input name="firstName" autocomplete="given-name" required></label>
-            <label>Last name<input name="lastName" autocomplete="family-name" required></label>
-            <label>Age<input name="age" type="number" min="4" max="99" required></label>
+            <label>First name<input name="firstName" autocomplete="given-name" placeholder="Unknown"></label>
+            <label>Last name<input name="lastName" autocomplete="family-name" placeholder="Participant"></label>
+            <label>Age<select name="age" id="manual-age"></select></label>
             <label>Gender
-              <select name="gender" required>
-                <option value="">Select</option>
+              <select name="gender">
+                <option>Unknown</option>
                 <option>Female</option>
                 <option>Male</option>
                 <option>Prefer not to say</option>
@@ -629,15 +629,15 @@
             </label>
             <label>Participant email<input name="email" type="email" autocomplete="email"></label>
             <label>Participant phone<input name="phone" type="tel" autocomplete="tel"></label>
-            <label class="full-field">Parent/guardian name <span class="field-hint">(required if under 18)</span><input name="guardianName" autocomplete="name"></label>
+            <label class="full-field">Parent/guardian name <span class="field-hint">(use Unknown if not gathered)</span><input name="guardianName" autocomplete="name" placeholder="Unknown"></label>
             <label>Parent/guardian email<input name="guardianEmail" type="email" autocomplete="email"></label>
             <label>Parent/guardian phone<input name="guardianPhone" type="tel" autocomplete="tel"></label>
             <label class="full-field">Street address<input name="address" autocomplete="street-address"></label>
-            <label>Camp session<select name="eventId" id="manual-event" required></select></label>
-            <label>Grade group<select name="trackId" id="manual-track" required></select></label>
+            <label>Camp session<select name="eventId" id="manual-event"></select></label>
+            <label>Grade group<select name="trackId" id="manual-track"></select></label>
             <label>Camp T-shirt size
-              <select name="shirtSize" required>
-                <option value="">Select</option>
+              <select name="shirtSize">
+                <option>Unknown</option>
                 <option>Youth XS</option>
                 <option>Youth S</option>
                 <option>Youth M</option>
@@ -744,6 +744,6 @@
     </dialog>
 
     <div class="toast" id="toast" role="status"></div>
-    <script src="app.js?v=20260602-manual-participants"></script>
+    <script src="app.js?v=20260602-manual-unknowns"></script>
   </body>
 </html>

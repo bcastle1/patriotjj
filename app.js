@@ -145,6 +145,7 @@ const refs = {
   addParticipant: $("#add-participant"),
   participantModal: $("#participant-modal"),
   participantForm: $("#participant-form"),
+  manualAge: $("#manual-age"),
   manualEvent: $("#manual-event"),
   manualTrack: $("#manual-track"),
   exportParticipants: $("#export-participants"),
@@ -801,18 +802,30 @@ function renderTrackOptions() {
 }
 
 function renderManualParticipantOptions() {
-  if (!refs.manualEvent || !refs.manualTrack) return;
-  refs.manualEvent.innerHTML = state.events
+  if (!refs.manualEvent || !refs.manualTrack || !refs.manualAge) return;
+  refs.manualAge.innerHTML = [
+    `<option value="unknown">Unknown</option>`,
+    ...Array.from({ length: 96 }, (_, index) => {
+      const age = index + 4;
+      return `<option value="${age}">${age}</option>`;
+    })
+  ].join("");
+  refs.manualEvent.innerHTML = [
+    `<option value="unknown">Unknown session</option>`,
+    ...state.events
     .map((event) => `<option value="${event.id}">${escapeHtml(event.title)} - ${escapeHtml(event.dateLine)}</option>`)
-    .join("");
-  refs.manualEvent.value = state.events.some((event) => event.id === selectedEventId)
-    ? selectedEventId
-    : state.events[0]?.id || "";
+  ].join("");
+  refs.manualEvent.value = "unknown";
   renderManualTrackOptions();
 }
 
 function renderManualTrackOptions() {
   if (!refs.manualEvent || !refs.manualTrack) return;
+  if (refs.manualEvent.value === "unknown") {
+    refs.manualTrack.innerHTML = `<option value="unknown">Unknown grade group</option>`;
+    refs.manualTrack.value = "unknown";
+    return;
+  }
   const event = state.events.find((item) => item.id === refs.manualEvent.value) || state.events[0];
   const previousTrack = refs.manualTrack.value;
   refs.manualTrack.innerHTML = (event?.tracks || [])
@@ -955,8 +968,8 @@ function syncManualPaymentDefaults(changedField) {
   }
 
   const participant = {
-    firstName: clean(elements.firstName.value),
-    lastName: clean(elements.lastName.value),
+    firstName: clean(elements.firstName.value) || "Unknown",
+    lastName: clean(elements.lastName.value) || "Participant",
     eventId,
     trackId
   };
@@ -969,20 +982,17 @@ function syncManualPaymentDefaults(changedField) {
 function handleManualParticipantSubmit(event) {
   event.preventDefault();
   const formData = new FormData(refs.participantForm);
-  const age = Number(formData.get("age"));
-  const guardianName = clean(formData.get("guardianName"));
-  if (age < 18 && !guardianName) {
-    toast("Parent/guardian name is required for minors.");
-    refs.participantForm.elements.guardianName.focus();
-    return;
-  }
+  const age = normalizeManualAge(formData.get("age"));
+  const guardianName = clean(formData.get("guardianName")) || (isKnownAge(age) && Number(age) < 18 ? "Unknown" : "");
+  const firstName = clean(formData.get("firstName"));
+  const lastName = clean(formData.get("lastName"));
 
   const participant = {
     id: makeId("participant"),
-    firstName: clean(formData.get("firstName")),
-    lastName: clean(formData.get("lastName")),
+    firstName: firstName || "Unknown",
+    lastName: lastName || "Participant",
     age,
-    gender: clean(formData.get("gender")),
+    gender: clean(formData.get("gender")) || "Unknown",
     guardianName,
     guardianEmail: clean(formData.get("guardianEmail")),
     guardianPhone: clean(formData.get("guardianPhone")),
@@ -999,8 +1009,8 @@ function handleManualParticipantSubmit(event) {
 
   if (formData.get("waiverStatus") === "signed") {
     const signerName = clean(formData.get("waiverSignerName")) || guardianName || fullName(participant);
-    const signerRole = clean(formData.get("waiverSignerRole")) || (age < 18 ? "Parent" : "Self");
-    if (age < 18 && signerRole === "Self") {
+    const signerRole = clean(formData.get("waiverSignerRole")) || (isKnownAge(age) && Number(age) < 18 ? "Parent" : "Self");
+    if (isKnownAge(age) && Number(age) < 18 && signerRole === "Self") {
       toast("A parent or guardian must be the waiver signer for minors.");
       refs.participantForm.elements.waiverSignerRole.focus();
       return;
@@ -1271,9 +1281,11 @@ function renderParticipants() {
       participant.shirtSize
     ].join(" ").toLowerCase();
     const paymentState = participantPaymentState(participant.id);
+    const knownAge = isKnownAge(participant.age);
     return (
       (!query || searchable.includes(query)) &&
-      (ageFilter === "all" || (ageFilter === "minor" ? participant.age < 18 : participant.age >= 18)) &&
+      (ageFilter === "all" ||
+        (ageFilter === "unknown" ? !knownAge : knownAge && (ageFilter === "minor" ? Number(participant.age) < 18 : Number(participant.age) >= 18))) &&
       (eventFilter === "all" || participant.eventId === eventFilter) &&
       (paymentFilter === "all" || paymentState === paymentFilter)
     );
@@ -1286,7 +1298,7 @@ function renderParticipants() {
       return `
         <tr class="clickable-row" data-participant-id="${participant.id}">
           <td><strong>${escapeHtml(fullName(participant))}</strong><br>${escapeHtml(participantContactEmail(participant) || "No email")}</td>
-          <td>${Number(participant.age || 0)}</td>
+          <td>${escapeHtml(ageLabel(participant.age))}</td>
           <td>${escapeHtml(event?.title || "Unknown")}<br>${escapeHtml(trackLabel(participant.eventId, participant.trackId))}</td>
           <td>${escapeHtml(participant.shirtSize || "N/A")}</td>
           <td>${escapeHtml(participantContactPhone(participant) || "N/A")}${clean(participant.phone) && parentPhone(participant) && parentPhone(participant) !== clean(participant.phone) ? `<br><span class="muted-cell">Parent: ${escapeHtml(parentPhone(participant))}</span>` : ""}</td>
@@ -1321,8 +1333,8 @@ function renderParticipantDetail() {
     <span class="status-pill ${participantPaymentState(participant.id)}">${participantPaymentState(participant.id)}</span>
     <dl class="detail-list">
       <div><dt>Signed up</dt><dd>${formatDateTime(participant.signedUpAt)}</dd></div>
-      <div><dt>Age</dt><dd>${Number(participant.age || 0)}</dd></div>
-      <div><dt>Gender</dt><dd>${escapeHtml(participant.gender)}</dd></div>
+      <div><dt>Age</dt><dd>${escapeHtml(ageLabel(participant.age))}</dd></div>
+      <div><dt>Gender</dt><dd>${escapeHtml(participant.gender || "Unknown")}</dd></div>
       <div><dt>Parent/guardian</dt><dd>${escapeHtml(parentName(participant) || "N/A")}</dd></div>
       <div><dt>Parent email</dt><dd>${escapeHtml(parentEmail(participant) || "N/A")}</dd></div>
       <div><dt>Parent phone</dt><dd>${escapeHtml(parentPhone(participant) || "N/A")}</dd></div>
@@ -1420,7 +1432,7 @@ function signedWaiverHtml(participant) {
     </header>
     <dl class="detail-list waiver-meta">
       <div><dt>Participant</dt><dd>${escapeHtml(waiver.participantName || fullName(participant))}</dd></div>
-      <div><dt>Age</dt><dd>${Number(waiver.participantAge || participant.age || 0)}</dd></div>
+      <div><dt>Age</dt><dd>${escapeHtml(ageLabel(waiver.participantAge || participant.age))}</dd></div>
       <div><dt>Parent/guardian</dt><dd>${escapeHtml(waiver.guardianName || parentName(participant) || "N/A")}</dd></div>
       <div><dt>Session</dt><dd>${escapeHtml(waiver.eventTitle || eventTitle(participant.eventId))}</dd></div>
       <div><dt>Track</dt><dd>${escapeHtml(waiver.trackLabel || trackLabel(participant.eventId, participant.trackId))}</dd></div>
@@ -1477,7 +1489,7 @@ function printSignedWaiver(participantId) {
         <h1>${escapeHtml(participant.waiver.title || "Signed Waiver")}</h1>
         <dl>
           <div><dt>Participant</dt><dd>${escapeHtml(participant.waiver.participantName || fullName(participant))}</dd></div>
-          <div><dt>Age</dt><dd>${Number(participant.waiver.participantAge || participant.age || 0)}</dd></div>
+          <div><dt>Age</dt><dd>${escapeHtml(ageLabel(participant.waiver.participantAge || participant.age))}</dd></div>
           <div><dt>Parent/guardian</dt><dd>${escapeHtml(participant.waiver.guardianName || parentName(participant) || "N/A")}</dd></div>
           <div><dt>Session</dt><dd>${escapeHtml(participant.waiver.eventTitle || eventTitle(participant.eventId))}</dd></div>
           <div><dt>Track</dt><dd>${escapeHtml(participant.waiver.trackLabel || trackLabel(participant.eventId, participant.trackId))}</dd></div>
@@ -2490,8 +2502,8 @@ function exportParticipantsCsv() {
     ...state.participants.map((participant) => [
       participant.firstName,
       participant.lastName,
-      participant.age,
-      participant.gender,
+      ageLabel(participant.age),
+      participant.gender || "Unknown",
       parentName(participant),
       parentEmail(participant),
       parentPhone(participant),
@@ -2585,6 +2597,21 @@ function participantWaiverState(participant) {
 function participantPaymentState(participantId) {
   const payments = state.payments.filter((payment) => payment.participantId === participantId);
   return payments.some((payment) => payment.status === "paid") ? "paid" : "pending";
+}
+
+function normalizeManualAge(value) {
+  const cleaned = clean(value).toLowerCase();
+  if (!cleaned || cleaned === "unknown") return "Unknown";
+  const age = Number(cleaned);
+  return Number.isFinite(age) ? age : "Unknown";
+}
+
+function isKnownAge(value) {
+  return value !== "" && value !== null && value !== undefined && Number.isFinite(Number(value));
+}
+
+function ageLabel(value) {
+  return isKnownAge(value) ? String(Number(value)) : "Unknown";
 }
 
 function fullName(participant) {
