@@ -9,7 +9,7 @@
       content="Patriots Jiu-jitsu summer camp signup, Venmo payment, team store, reviews, Q&A, and admin management app."
     >
     <link rel="icon" href="assets/ahs-patriots-mark.png">
-    <link rel="stylesheet" href="styles.css?v=20260602-participant-edit">
+    <link rel="stylesheet" href="styles.css?v=20260603-crm-vault">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
   </head>
   <body>
@@ -338,12 +338,22 @@
               <div>
                 <p class="eyebrow">Private dashboard</p>
                 <h2>Camp operations.</h2>
+                <span class="crm-save-status" id="crm-save-status">CRM storage ready</span>
               </div>
               <div class="button-row">
                 <a class="ghost-button" id="admin-webmail" href="https://privateemail.com/login" target="_blank" rel="noopener noreferrer">
                   <i data-lucide="mail"></i>
                   Webmail
                 </a>
+                <button class="ghost-button" type="button" id="export-crm-backup">
+                  <i data-lucide="archive"></i>
+                  Backup CRM
+                </button>
+                <label class="ghost-button file-button">
+                  <i data-lucide="upload"></i>
+                  Restore CRM
+                  <input id="restore-crm-backup" type="file" accept="application/json,.json">
+                </label>
                 <button class="ghost-button" type="button" id="export-participants">
                   <i data-lucide="download"></i>
                   Export CSV
@@ -745,6 +755,6 @@
     </dialog>
 
     <div class="toast" id="toast" role="status"></div>
-    <script src="app.js?v=20260602-participant-edit"></script>
+    <script src="app.js?v=20260603-crm-vault"></script>
   </body>
 </html>

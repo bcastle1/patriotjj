@@ -1,4 +1,8 @@
 const APP_KEY = "patriotJjCampApp.v1";
+const APP_BACKUP_KEY = `${APP_KEY}.backup`;
+const APP_RECOVERY_KEY = `${APP_KEY}.recovery`;
+const APP_LEGACY_KEYS = ["patriotJjCampApp", "patriotJjCampApp.v0"];
+const CRM_BACKUP_VERSION = 1;
 const ADMIN_PASSWORD = "patriot";
 const PROGRAM_NAME = "Patriots Jiu-jitsu";
 const FLYER_TITLE = "Patriots Jiu-jitsu";
@@ -107,6 +111,9 @@ const refs = {
   adminLoginForm: $("#admin-login-form"),
   adminApp: $("#admin-app"),
   adminLogout: $("#admin-logout"),
+  crmSaveStatus: $("#crm-save-status"),
+  exportCrmBackup: $("#export-crm-backup"),
+  restoreCrmBackup: $("#restore-crm-backup"),
   adminMetrics: $("#admin-metrics"),
   participantSearch: $("#participant-search"),
   participantAgeFilter: $("#participant-age-filter"),
@@ -176,6 +183,10 @@ const sessionMedia = new Map();
 
 function seedState() {
   return {
+    crmMeta: {
+      storageVersion: CRM_BACKUP_VERSION,
+      lastSavedAt: ""
+    },
     storeCatalogVersion: STORE_CATALOG_VERSION,
     settings: {
       contactEmail: "info@patriotjj.com",
@@ -321,16 +332,74 @@ function seedState() {
 
 function loadState() {
   try {
-    const stored = JSON.parse(localStorage.getItem(APP_KEY));
+    const stored = readStoredCrmState();
     const merged = mergeState(seedState(), stored || {});
     const { state: cleanedState, changed } = removeExampleAdminRecords(merged);
-    if (changed) {
-      localStorage.setItem(APP_KEY, JSON.stringify(cleanedState));
+    if (changed || stored) {
+      persistCrmState(cleanedState, { preservePrevious: false, updateStatus: false });
     }
     return cleanedState;
   } catch {
     return seedState();
   }
+}
+
+function readStoredCrmState() {
+  const candidates = [APP_KEY, APP_BACKUP_KEY, APP_RECOVERY_KEY, ...APP_LEGACY_KEYS]
+    .map(readCrmStorageCandidate)
+    .filter(Boolean)
+    .sort((a, b) => (
+      crmStateScore(b.state) - crmStateScore(a.state) ||
+      Date.parse(b.savedAt || 0) - Date.parse(a.savedAt || 0)
+    ));
+  return candidates[0]?.state || null;
+}
+
+function readCrmStorageCandidate(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    const candidate = parsed?.state && typeof parsed.state === "object" ? parsed.state : parsed;
+    if (!candidate || typeof candidate !== "object") return null;
+    return {
+      key,
+      state: candidate,
+      savedAt: candidate.crmMeta?.lastSavedAt || parsed.savedAt || ""
+    };
+  } catch {
+    return null;
+  }
+}
+
+function crmStateScore(appState) {
+  const participants = Array.isArray(appState?.participants) ? appState.participants.length : 0;
+  const payments = Array.isArray(appState?.payments) ? appState.payments.length : 0;
+  const storeOrders = Array.isArray(appState?.storeOrders) ? appState.storeOrders.length : 0;
+  return participants * 10000 + payments * 100 + storeOrders;
+}
+
+function persistCrmState(appState, options = {}) {
+  const { preservePrevious = true, updateStatus = true } = options;
+  const stampedState = {
+    ...appState,
+    crmMeta: {
+      ...(appState.crmMeta || {}),
+      storageVersion: CRM_BACKUP_VERSION,
+      lastSavedAt: new Date().toISOString()
+    }
+  };
+  const nextJson = JSON.stringify(stampedState);
+  if (preservePrevious) {
+    const previousJson = localStorage.getItem(APP_KEY) || localStorage.getItem(APP_BACKUP_KEY);
+    if (previousJson && previousJson !== nextJson) {
+      localStorage.setItem(APP_RECOVERY_KEY, previousJson);
+    }
+  }
+  localStorage.setItem(APP_KEY, nextJson);
+  localStorage.setItem(APP_BACKUP_KEY, nextJson);
+  Object.assign(appState, stampedState);
+  if (updateStatus) renderCrmStatus(appState);
 }
 
 function mergeState(base, incoming) {
@@ -572,7 +641,7 @@ function updateWaiverSignatureScope(value) {
 }
 
 function saveState() {
-  localStorage.setItem(APP_KEY, JSON.stringify(state));
+  persistCrmState(state);
   postHeight();
 }
 
@@ -637,6 +706,8 @@ function bindEvents() {
   });
   refs.participantForm.addEventListener("submit", handleManualParticipantSubmit);
   refs.exportParticipants.addEventListener("click", exportParticipantsCsv);
+  refs.exportCrmBackup.addEventListener("click", exportCrmBackup);
+  refs.restoreCrmBackup.addEventListener("change", handleCrmBackupRestore);
   refs.participantSearch.addEventListener("input", renderParticipants);
   refs.participantAgeFilter.addEventListener("change", renderParticipants);
   refs.participantEventFilter.addEventListener("change", renderParticipants);
@@ -1309,6 +1380,7 @@ function handleAdminLogin(event) {
 
 function renderAdmin() {
   renderAdminMetrics();
+  renderCrmStatus();
   renderParticipantEventFilter();
   renderParticipants();
   renderPayments();
@@ -1321,6 +1393,14 @@ function renderAdmin() {
   renderFaqEditor();
   renderReviewEditor();
   refreshIcons();
+}
+
+function renderCrmStatus(appState = state) {
+  if (!refs.crmSaveStatus) return;
+  const savedAt = appState?.crmMeta?.lastSavedAt;
+  refs.crmSaveStatus.textContent = savedAt
+    ? `CRM saved locally ${formatDateTime(savedAt)}`
+    : "CRM saves locally in this browser";
 }
 
 function renderAdminMetrics() {
@@ -2609,11 +2689,60 @@ function exportParticipantsCsv() {
     ])
   ];
   const csv = rows.map((row) => row.map(csvCell).join(",")).join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  downloadTextFile("patriot-jj-participants.csv", csv, "text/csv;charset=utf-8");
+}
+
+function exportCrmBackup() {
+  const backup = {
+    version: CRM_BACKUP_VERSION,
+    appKey: APP_KEY,
+    exportedAt: new Date().toISOString(),
+    state
+  };
+  const date = new Date().toISOString().slice(0, 10);
+  downloadTextFile(
+    `patriot-jj-crm-backup-${date}.json`,
+    JSON.stringify(backup, null, 2),
+    "application/json;charset=utf-8"
+  );
+  toast("CRM backup downloaded.");
+}
+
+function handleCrmBackupRestore(event) {
+  const file = event.target.files?.[0];
+  event.target.value = "";
+  if (!file) return;
+  const reader = new FileReader();
+  reader.addEventListener("load", () => {
+    try {
+      const parsed = JSON.parse(String(reader.result || "{}"));
+      const backupState = parsed?.state && typeof parsed.state === "object" ? parsed.state : parsed;
+      if (!Array.isArray(backupState.participants)) {
+        throw new Error("Backup file does not contain participant records.");
+      }
+      const participantCount = backupState.participants.length;
+      if (!window.confirm(`Restore CRM backup with ${participantCount} participant record${participantCount === 1 ? "" : "s"}? This replaces this browser's current CRM data.`)) {
+        return;
+      }
+      const merged = mergeState(seedState(), backupState);
+      state = removeExampleAdminRecords(merged).state;
+      selectedParticipantId = state.participants[0]?.id || "";
+      saveState();
+      renderAll();
+      toast(`CRM backup restored with ${state.participants.length} participant record${state.participants.length === 1 ? "" : "s"}.`);
+    } catch (error) {
+      toast(error.message || "CRM backup could not be restored.");
+    }
+  });
+  reader.readAsText(file);
+}
+
+function downloadTextFile(filename, content, type) {
+  const blob = new Blob([content], { type });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = "patriot-jj-participants.csv";
+  link.download = filename;
   link.click();
   URL.revokeObjectURL(url);
 }
