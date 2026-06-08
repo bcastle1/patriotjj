@@ -8,13 +8,14 @@ const profileDefaults = {
   secondary: "Point Guard",
   grad: "2024",
   school: "Rigby High School",
+  gpa: "3.7",
   fromEmail: "erik@puricloud.com",
   ccEmail: "",
   selectedContactId: new URLSearchParams(location.search).get("select") || "d1-byu-cougars",
   style:
     "Long combo guard with a strong jump shot, deep three-point range, post-up ability against smaller guards, and natural playmaking feel. Crashes the boards hard and can be trusted with the opponent's best perimeter scorer.",
   value:
-    "Royce brings coachability, maturity, leadership, and a team-first approach. He served abroad in Ecuador for two years, learned fluent Spanish, grew through daily service and leadership, and carries high standards for health, academics, and personal conduct. He can help build locker-room culture on and off the court.",
+    "Royce brings coachability, maturity, leadership, and a team-first approach. He earned a 3.7 high school GPA, served abroad in Ecuador for two years, learned fluent Spanish, grew through daily service and leadership, and carries high standards for health, academics, and personal conduct. He can help build locker-room culture on and off the court.",
   sent: {}
 };
 
@@ -27,6 +28,7 @@ const refs = {
   secondary: document.querySelector("#secondary"),
   grad: document.querySelector("#grad"),
   school: document.querySelector("#school"),
+  gpa: document.querySelector("#gpa"),
   style: document.querySelector("#style"),
   value: document.querySelector("#value"),
   fromEmail: document.querySelector("#from-email"),
@@ -80,13 +82,13 @@ function saveState() {
 }
 
 function hydrate() {
-  ["height", "vertical", "position", "secondary", "grad", "school", "style", "value", "fromEmail", "ccEmail"].forEach((key) => {
+  ["height", "vertical", "position", "secondary", "grad", "school", "gpa", "style", "value", "fromEmail", "ccEmail"].forEach((key) => {
     refs[key].value = state[key] || "";
   });
 }
 
 function bind() {
-  ["height", "vertical", "position", "secondary", "grad", "school", "style", "value", "fromEmail", "ccEmail"].forEach((key) => {
+  ["height", "vertical", "position", "secondary", "grad", "school", "gpa", "style", "value", "fromEmail", "ccEmail"].forEach((key) => {
     refs[key].addEventListener("input", () => {
       state[key] = refs[key].value;
       saveState();
@@ -162,7 +164,7 @@ My name is Royce Castle. I am a ${state.height} ${state.position} / ${state.seco
 
 On the court, I am a coachable, team-first guard who can stretch the floor with a jump shot and three-point shot, create for teammates, post smaller guards, rebound hard from the perimeter, and defend high-level assignments. In high school, opponents often game-planned their defense around limiting my scoring opportunities, and I was often asked to guard the other team's best player.
 
-I have spent the last two years serving abroad in Ecuador on a religious service mission. That experience helped me mature as a person and leader, taught me fluent Spanish, and strengthened my discipline, work ethic, and ability to put the team and mission ahead of myself. I do not use alcohol or drugs, take my health seriously, and would work to be a positive leader in the locker room and a strong representative of your program.
+Academically, I carried a ${state.gpa || "3.7"} high school GPA. I have also spent the last two years serving abroad in Ecuador on a religious service mission. That experience helped me mature as a person and leader, taught me fluent Spanish, and strengthened my discipline, work ethic, and ability to put the team and mission ahead of myself. I do not use alcohol or drugs, take my health seriously, and would work to be a positive leader in the locker room and a strong representative of your program.
 
 Would your staff prefer that I complete a questionnaire, send full game film, schedule a phone call, attend a tryout or camp, or continue the conversation by email? I am happy to provide references, academic information, stats, and additional video.
 

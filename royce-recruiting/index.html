@@ -4,7 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Royce Castle Recruiting Studio</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="styles.css?v=20260608-premium">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
   </head>
   <body>
@@ -25,45 +26,34 @@
     </header>
 
     <main>
-      <section class="hero" id="home">
-        <img src="assets/basketball-court.jpg" alt="Basketball court" class="hero-bg">
-        <div class="hero-content">
-          <img src="assets/royce-castle-profile.jpg" alt="Royce Castle in Rigby basketball uniform" class="player-photo">
-          <div>
-            <p class="eyebrow">Class of 2024 | Rigby High School</p>
-            <h1>Royce Castle</h1>
-            <div class="tags">
-              <span>6'5"</span>
-              <span>Shooting Guard</span>
-              <span>Point Guard</span>
-              <span>Fluent Spanish</span>
-              <span>Two-year service mission in Ecuador</span>
+      <section class="command-grid" id="home">
+        <section class="hero">
+          <img src="assets/basketball-court.jpg" alt="Basketball court" class="hero-bg">
+          <div class="hero-content">
+            <div class="athlete-card" aria-label="Royce Castle profile photo and academic highlight">
+              <img src="assets/royce-castle-profile.jpg" alt="Royce Castle in Rigby basketball uniform" class="player-photo">
+              <div class="athlete-card-footer">
+                <span>Academic profile</span>
+                <strong>High School GPA 3.7</strong>
+              </div>
+            </div>
+            <div class="hero-copy">
+              <h1>Royce Castle</h1>
+              <p class="hero-lede">A polished recruiting command center for coach outreach, player profile details, film, and program-fit follow-up.</p>
+              <div class="metric-strip" aria-label="Royce Castle key recruiting profile facts">
+                <span><strong>6'5"</strong><small>Height</small></span>
+                <span><strong>SG / PG</strong><small>Position</small></span>
+                <span><strong>3.7</strong><small>High School GPA</small></span>
+                <span><strong>2024</strong><small>Class</small></span>
+              </div>
+              <div class="tags">
+                <span>Rigby High School</span>
+                <span>Fluent Spanish</span>
+                <span>Two-year service mission in Ecuador</span>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
-
-      <section class="dashboard">
-        <aside class="panel profile-panel">
-          <div class="section-heading">
-            <p class="eyebrow">Portfolio</p>
-            <h2>Player Snapshot</h2>
-          </div>
-          <div class="field-grid">
-            <label>Height<input id="height" value="6'5&quot;"></label>
-            <label>Vertical<input id="vertical" placeholder="Add vertical"></label>
-            <label>Primary position<input id="position" value="Shooting Guard"></label>
-            <label>Secondary position<input id="secondary" value="Point Guard"></label>
-            <label>Graduation year<input id="grad" value="2024"></label>
-            <label>High school<input id="school" value="Rigby High School"></label>
-          </div>
-          <label>Style of play<textarea id="style" rows="5"></textarea></label>
-          <label>Program value<textarea id="value" rows="6"></textarea></label>
-          <div class="button-row">
-            <a class="secondary-button" href="contacts.html"><i data-lucide="table-2"></i>Open Worksheets</a>
-            <a class="secondary-button" href="flyer.html"><i data-lucide="printer"></i>Printable Profile</a>
-          </div>
-        </aside>
+        </section>
 
         <section class="panel" id="outreach">
           <div class="section-heading row">
@@ -83,7 +73,7 @@
           </div>
           <label>To<input id="to-email" readonly></label>
           <label>Subject<input id="subject"></label>
-          <label>Email body<textarea id="email-body" rows="18"></textarea></label>
+          <label>Email body<textarea id="email-body" rows="11"></textarea></label>
           <div class="button-row">
             <button class="primary-button" id="copy-email" type="button"><i data-lucide="copy"></i>Copy Email</button>
             <button class="secondary-button" id="open-mail" type="button"><i data-lucide="mail"></i>Open Mail App</button>
@@ -91,6 +81,30 @@
           </div>
           <p class="status" id="status"></p>
         </section>
+      </section>
+
+      <section class="dashboard" id="dashboard">
+        <aside class="panel profile-panel">
+          <div class="section-heading">
+            <p class="eyebrow">Portfolio</p>
+            <h2>Player Snapshot</h2>
+          </div>
+          <div class="field-grid">
+            <label>Height<input id="height" value="6'5&quot;"></label>
+            <label>Vertical<input id="vertical" placeholder="Add vertical"></label>
+            <label>Primary position<input id="position" value="Shooting Guard"></label>
+            <label>Secondary position<input id="secondary" value="Point Guard"></label>
+            <label>Graduation year<input id="grad" value="2024"></label>
+            <label>High school<input id="school" value="Rigby High School"></label>
+            <label>High school GPA<input id="gpa" value="3.7"></label>
+          </div>
+          <label>Style of play<textarea id="style" rows="5"></textarea></label>
+          <label>Program value<textarea id="value" rows="6"></textarea></label>
+          <div class="button-row">
+            <a class="secondary-button" href="contacts.html"><i data-lucide="table-2"></i>Open Worksheets</a>
+            <a class="secondary-button" href="flyer.html"><i data-lucide="printer"></i>Printable Profile</a>
+          </div>
+        </aside>
       </section>
 
       <section class="panel queue-panel">
@@ -124,6 +138,6 @@
 
     <div id="toast" class="toast" role="status"></div>
     <script src="contacts-data.js"></script>
-    <script src="app.js"></script>
+    <script src="app.js?v=20260608-premium"></script>
   </body>
 </html>
