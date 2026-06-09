@@ -345,6 +345,11 @@ function seedState() {
         answer: "Sweatpants are recommended for mat work because they provide better leg coverage, but athletic shorts can be worn if they are comfortable and allow safe movement."
       },
       {
+        id: "faq-location",
+        question: "Where is the camp located",
+        answer: "The camp is being held in the studio located on the second floor of patriot arena (next to the teacher's lounge), American Heritage, American Fork Campus."
+      },
+      {
         id: "faq-safety",
         question: "How is sparring handled?",
         answer: "The camp emphasizes control, safety, and practical skill. Contact is supervised, age-appropriate, and focused on learning."
