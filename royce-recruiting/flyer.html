@@ -36,7 +36,7 @@
 
       .hero {
         display: grid;
-        grid-template-columns: 0.74fr 0.26fr;
+        grid-template-columns: minmax(0, 1fr) 268px;
         min-height: 310px;
         color: #ffffff;
         background:
@@ -88,16 +88,16 @@
       .photo-box {
         display: grid;
         place-items: center;
-        padding: 28px;
+        padding: 22px;
       }
 
       .photo-frame {
         display: grid;
         place-items: center;
-        width: 190px;
-        height: 190px;
+        width: 214px;
+        height: 286px;
         overflow: hidden;
-        border-radius: 50%;
+        border-radius: 18px;
         background: var(--blue);
         border: 5px solid #ffffff;
         color: #ffffff;
@@ -110,7 +110,7 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
-        object-position: 50% 18%;
+        object-position: 50% 20%;
       }
 
       .body {
@@ -248,6 +248,22 @@
         h1 {
           font-size: 3rem;
         }
+
+        .hero-copy {
+          padding: 30px 24px 18px;
+        }
+
+        .tags {
+          display: grid;
+          grid-template-columns: 1fr;
+          width: min(320px, 100%);
+        }
+
+        .tags span {
+          min-width: 0;
+          text-align: center;
+          overflow-wrap: anywhere;
+        }
       }
     </style>
   </head>
@@ -260,7 +276,7 @@
           <div class="tags">
             <span data-field="height">6'5"</span>
             <span data-field="primaryPosition">Shooting Guard</span>
-            <span data-field="secondaryPosition">Point Guard</span>
+            <span data-field="secondaryPosition">Playmaker</span>
             <span data-field="gpaTag">High School GPA 3.7</span>
             <span>Rigby High School</span>
           </div>
@@ -278,9 +294,9 @@
           <div class="stat-grid">
             <div class="stat"><strong data-field="height">6'5"</strong><span>Height</span></div>
             <div class="stat"><strong id="vertical">Add</strong><span>Vertical</span></div>
-            <div class="stat"><strong>SG / PG</strong><span>Position</span></div>
+            <div class="stat"><strong>SG / Playmaker</strong><span>Role</span></div>
             <div class="stat"><strong data-field="gpa">3.7</strong><span>High School GPA</span></div>
-            <div class="stat"><strong>Spanish</strong><span>Fluent</span></div>
+            <div class="stat"><strong>Lockdown</strong><span>Defense</span></div>
           </div>
           <div class="contact-line">
             <strong>Recruiting Contact</strong>
@@ -308,7 +324,7 @@
               <li>Can post up smaller guards and make plays for teammates.</li>
               <li>Ferocious defender who embraces tough assignments.</li>
               <li>Crashes the boards and competes with a team-first motor.</li>
-              <li>Two years of service leadership abroad in Ecuador.</li>
+              <li>High-motor workhorse who brings consistent effort to every workout.</li>
               <li>High personal standards, strong work ethic, and healthy lifestyle.</li>
             </ul>
           </section>
@@ -327,16 +343,24 @@
       const standalone = JSON.parse(localStorage.getItem(STANDALONE_KEY) || "{}");
       const athlete = saved.athlete || standalone || {};
       const settings = saved.settings || { fromEmail: standalone.fromEmail };
+      const secondaryRole = athlete.secondaryPosition || athlete.secondary;
+      const normalizedSecondary = secondaryRole === "Point Guard" ? "Playmaker" : secondaryRole || "Playmaker";
+      const defaultStyle =
+        "Long combo guard with a strong jump shot, deep three-point range, post-up ability against smaller guards, and natural playmaking feel. Brings lockdown defensive effort, crashes the boards hard, and can be trusted with the opponent's best perimeter scorer.";
+      const defaultValue =
+        "Royce brings coachability, maturity, leadership, and a team-first approach. He earned a 3.7 high school GPA and plays with the kind of high-motor, workhorse energy coaches want in a program. He carries high standards for health, academics, and personal conduct and can help build locker-room culture on and off the court.";
+      const styleText = athlete.style || defaultStyle;
+      const valueText = athlete.value || defaultValue;
       const fieldFallbacks = {
         name: athlete.name || "Royce Castle",
         graduationYear: athlete.graduationYear || athlete.grad || "2024",
         height: athlete.height || "6'5\"",
         primaryPosition: athlete.primaryPosition || athlete.position || "Shooting Guard",
-        secondaryPosition: athlete.secondaryPosition || athlete.secondary || "Point Guard",
+        secondaryPosition: normalizedSecondary,
         gpa: athlete.gpa || "3.7",
         gpaTag: `High School GPA ${athlete.gpa || "3.7"}`,
-        style: athlete.style,
-        value: athlete.value,
+        style: styleText.includes("fluent Spanish") || styleText.includes("Ecuador") ? defaultStyle : styleText,
+        value: valueText.includes("fluent Spanish") || valueText.includes("Ecuador") ? defaultValue : valueText,
         accolades: athlete.accolades
       };
       document.querySelectorAll("[data-field]").forEach((node) => {
