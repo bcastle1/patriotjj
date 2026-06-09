@@ -5,7 +5,7 @@ const profileDefaults = {
   height: "6'5\"",
   vertical: "",
   position: "Shooting Guard",
-  secondary: "Point Guard",
+  secondary: "Playmaker",
   grad: "2024",
   school: "Rigby High School",
   gpa: "3.7",
@@ -13,9 +13,9 @@ const profileDefaults = {
   ccEmail: "",
   selectedContactId: new URLSearchParams(location.search).get("select") || "d1-byu-cougars",
   style:
-    "Long combo guard with a strong jump shot, deep three-point range, post-up ability against smaller guards, and natural playmaking feel. Crashes the boards hard and can be trusted with the opponent's best perimeter scorer.",
+    "Long combo guard with a strong jump shot, deep three-point range, post-up ability against smaller guards, and natural playmaking feel. Brings lockdown defensive effort, crashes the boards hard, and can be trusted with the opponent's best perimeter scorer.",
   value:
-    "Royce brings coachability, maturity, leadership, and a team-first approach. He earned a 3.7 high school GPA, served abroad in Ecuador for two years, learned fluent Spanish, grew through daily service and leadership, and carries high standards for health, academics, and personal conduct. He can help build locker-room culture on and off the court.",
+    "Royce brings coachability, maturity, leadership, and a team-first approach. He earned a 3.7 high school GPA and plays with the kind of high-motor, workhorse energy coaches want in a program. He carries high standards for health, academics, and personal conduct and can help build locker-room culture on and off the court.",
   sent: {}
 };
 
@@ -45,17 +45,30 @@ const refs = {
   toast: document.querySelector("#toast")
 };
 
+const preferredQueueIds = [
+  "d1-byu-cougars",
+  "d1-arizona-wildcats",
+  "d1-gonzaga-bulldogs",
+  "d1-utah-utes",
+  "d1-colorado-buffaloes",
+  "d1-usc-trojans"
+];
+
+const schoolVisuals = {
+  "d1-byu-cougars": { badge: "Y", color: "#002e5d", accent: "#ffffff" },
+  "d1-arizona-wildcats": { badge: "A", color: "#0c234b", accent: "#ab0520" },
+  "d1-gonzaga-bulldogs": { badge: "G", color: "#0b2d5c", accent: "#d9d9d6" },
+  "d1-utah-utes": { badge: "U", color: "#cc0000", accent: "#ffffff" },
+  "d1-colorado-buffaloes": { badge: "CU", color: "#cfb87c", accent: "#111111" },
+  "d1-usc-trojans": { badge: "SC", color: "#990000", accent: "#ffc72c" }
+};
+
 const songIdeas = [
-  "Tweaker - Gelo",
-  "Not Like Us - Kendrick Lamar",
-  "FE!N - Travis Scott ft. Playboi Carti",
-  "First Person Shooter - Drake ft. J. Cole",
-  "Surround Sound - JID",
-  "Family Ties - Baby Keem & Kendrick Lamar",
-  "Just Wanna Rock - Lil Uzi Vert",
-  "Ballin - Mustard ft. Roddy Ricch",
-  "Win - Jay Rock",
-  "Remember the Name - Fort Minor"
+  { title: "Not Like Us", artist: "Kendrick Lamar" },
+  { title: "FE!N (feat. Playboi Carti)", artist: "Travis Scott" },
+  { title: "Surround Sound", artist: "JID" },
+  { title: "First Person Shooter", artist: "Drake" },
+  { title: "Just Wanna Rock", artist: "Lil Uzi Vert" }
 ];
 
 init();
@@ -71,10 +84,20 @@ function init() {
 
 function loadState() {
   try {
-    return { ...profileDefaults, ...(JSON.parse(localStorage.getItem(APP_KEY) || "{}") || {}) };
+    return normalizeState({ ...profileDefaults, ...(JSON.parse(localStorage.getItem(APP_KEY) || "{}") || {}) });
   } catch {
     return { ...profileDefaults };
   }
+}
+
+function normalizeState(nextState) {
+  if (nextState.secondary === "Point Guard") {
+    nextState.secondary = "Playmaker";
+  }
+  if (String(nextState.value || "").includes("Ecuador") || String(nextState.value || "").includes("fluent Spanish")) {
+    nextState.value = profileDefaults.value;
+  }
+  return nextState;
 }
 
 function saveState() {
@@ -119,14 +142,17 @@ function render() {
 }
 
 function renderQueue() {
-  const queue = contacts.filter((contact) => contact.group === "d1" && !state.sent[contact.id]).slice(0, 12);
-  refs.contactCount.textContent = `${contacts.length.toLocaleString()} contacts`;
+  const unsent = contacts.filter((contact) => contact.group === "d1" && !state.sent[contact.id]);
+  const preferred = preferredQueueIds.map((id) => unsent.find((contact) => contact.id === id)).filter(Boolean);
+  const queue = [...preferred, ...unsent.filter((contact) => !preferredQueueIds.includes(contact.id))].slice(0, 6);
+  refs.contactCount.textContent = `Showing next ${queue.length} of ${unsent.length.toLocaleString()} unsent`;
   refs.queue.innerHTML = queue
     .map(
       (contact) => `
         <button class="${contact.id === state.selectedContactId ? "selected" : ""}" data-contact="${escapeAttr(contact.id)}" type="button">
-          <strong>${escapeHtml(contact.displayName || contact.school)}</strong>
-          <span>${escapeHtml(contact.state || "")} | ${escapeHtml(contact.division || "")} | ${contactEmail(contact) || "verify email"}</span>
+          <span class="school-logo" style="--school-color: ${escapeAttr(teamColor(contact, "color"))}; --school-accent: ${escapeAttr(teamColor(contact, "accent"))};">${escapeHtml(teamBadge(contact))}</span>
+          <strong>${schoolNameLines(contact)}</strong>
+          <span>${schoolLocation(contact)}</span>
         </button>
       `
     )
@@ -142,7 +168,18 @@ function renderQueue() {
 }
 
 function renderSongs() {
-  refs.songs.innerHTML = songIdeas.map((song) => `<span>${escapeHtml(song)}</span>`).join("");
+  refs.songs.innerHTML = songIdeas
+    .map(
+      (song) => `
+        <div class="song-row">
+          <span class="song-play"><i data-lucide="play"></i></span>
+          <strong>${escapeHtml(song.title)}</strong>
+          <small>${escapeHtml(song.artist)}</small>
+          <span class="dots">...</span>
+        </div>
+      `
+    )
+    .join("");
 }
 
 function compose() {
@@ -162,9 +199,9 @@ function buildEmail(contact) {
 
 My name is Royce Castle. I am a ${state.height} ${state.position} / ${state.secondary} from ${state.school} in Idaho, class of ${state.grad}. I am reaching out because I am interested in the ${schoolName} men's basketball program and would be grateful for a chance to learn the best process for being evaluated by your staff.
 
-On the court, I am a coachable, team-first guard who can stretch the floor with a jump shot and three-point shot, create for teammates, post smaller guards, rebound hard from the perimeter, and defend high-level assignments. In high school, opponents often game-planned their defense around limiting my scoring opportunities, and I was often asked to guard the other team's best player.
+On the court, I am a coachable, team-first guard who can stretch the floor with a jump shot and three-point shot, create for teammates as a playmaker, post smaller guards, rebound hard from the perimeter, and defend high-level assignments. In high school, opponents often game-planned their defense around limiting my scoring opportunities, and I was often asked to guard the other team's best player.
 
-Academically, I carried a ${state.gpa || "3.7"} high school GPA. I have also spent the last two years serving abroad in Ecuador on a religious service mission. That experience helped me mature as a person and leader, taught me fluent Spanish, and strengthened my discipline, work ethic, and ability to put the team and mission ahead of myself. I do not use alcohol or drugs, take my health seriously, and would work to be a positive leader in the locker room and a strong representative of your program.
+Academically, I carried a ${state.gpa || "3.7"} high school GPA. I also try to bring lockdown defensive effort and high-motor workhorse energy every day. I do not use alcohol or drugs, take my health seriously, and would work to be a positive leader in the locker room and a strong representative of your program.
 
 Would your staff prefer that I complete a questionnaire, send full game film, schedule a phone call, attend a tryout or camp, or continue the conversation by email? I am happy to provide references, academic information, stats, and additional video.
 
@@ -182,6 +219,51 @@ function coachLastName(contact) {
 
 function contactEmail(contact) {
   return [contact.headEmail, contact.assistantEmail].filter(Boolean).join(", ");
+}
+
+function teamBadge(contact) {
+  return schoolVisuals[contact.id]?.badge || acronym(contact.displayName || contact.school || "RC").slice(0, 3);
+}
+
+function teamColor(contact, key) {
+  const visual = schoolVisuals[contact.id] || {};
+  const fallback = key === "accent" ? "#ffffff" : contact.primaryColor || "#123d75";
+  const value = visual[key] || fallback;
+  return /^#[0-9a-f]{3,6}$/i.test(value) ? value : fallback;
+}
+
+function schoolNameLines(contact) {
+  const name = contact.displayName || contact.school || "School";
+  const parts = name.split(" ");
+  if (parts.length <= 2) return escapeHtml(name);
+  const mascot = contact.mascot || parts.slice(-1)[0];
+  const school = name.replace(new RegExp(`\\s+${escapeRegExp(mascot)}$`), "");
+  return `${escapeHtml(school)}<br>${escapeHtml(mascot)}`;
+}
+
+function schoolLocation(contact) {
+  const stateNames = {
+    AZ: "Tucson, AZ",
+    CA: "Los Angeles, CA",
+    CO: "Boulder, CO",
+    UT: "Salt Lake City, UT",
+    WA: "Spokane, WA"
+  };
+  if (contact.id === "d1-byu-cougars") return "Provo, UT";
+  return stateNames[contact.state] || contact.state || contact.division || "Recruiting";
+}
+
+function acronym(value) {
+  return String(value)
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => word[0])
+    .join("")
+    .toUpperCase();
+}
+
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 async function copyEmail() {

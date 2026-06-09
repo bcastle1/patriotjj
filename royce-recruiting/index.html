@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Royce Castle Recruiting Studio</title>
     <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="styles.css?v=20260608-premium">
+    <link rel="stylesheet" href="styles.css?v=20260608-mockup-final">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
   </head>
   <body>
@@ -23,39 +23,45 @@
         <a href="#video"><i data-lucide="video"></i>Video</a>
         <a href="flyer.html"><i data-lucide="printer"></i>Profile</a>
       </nav>
+      <div class="top-actions" aria-label="Header actions">
+        <span class="moon-button" aria-hidden="true"><i data-lucide="moon"></i></span>
+        <a class="back-button" href="../"><i data-lucide="arrow-left"></i>Back to App</a>
+      </div>
     </header>
 
     <main>
       <section class="command-grid" id="home">
-        <section class="hero">
-          <img src="assets/basketball-court.jpg" alt="Basketball court" class="hero-bg">
-          <div class="hero-content">
-            <div class="athlete-card" aria-label="Royce Castle profile photo and academic highlight">
+        <div class="profile-stack">
+          <section class="hero">
+            <img src="assets/basketball-court.jpg" alt="Basketball court" class="hero-bg">
+            <div class="hero-content">
               <img src="assets/royce-castle-profile.jpg" alt="Royce Castle in Rigby basketball uniform" class="player-photo">
-              <div class="athlete-card-footer">
-                <span>Academic profile</span>
-                <strong>High School GPA 3.7</strong>
+              <div class="hero-copy">
+                <h1>Royce Castle</h1>
+                <p class="class-line">Class of <strong>2024</strong><span></span>Rigby High School</p>
+                <div class="profile-facts" aria-label="Royce Castle profile facts">
+                  <span><i data-lucide="ruler"></i>6'5"</span>
+                  <span><i data-lucide="crosshair"></i>Shooting Guard</span>
+                  <span><i data-lucide="circle-dot"></i>Playmaker</span>
+                  <span><i data-lucide="shield"></i>Lockdown Defender</span>
+                  <span><i data-lucide="flame"></i>High-Motor Workhorse</span>
+                </div>
+                <div class="gpa-ribbon"><i data-lucide="star"></i><span>High School GPA</span><strong>3.7</strong></div>
               </div>
             </div>
-            <div class="hero-copy">
-              <h1>Royce Castle</h1>
-              <p class="hero-lede">A polished recruiting command center for coach outreach, player profile details, film, and program-fit follow-up.</p>
-              <div class="metric-strip" aria-label="Royce Castle key recruiting profile facts">
-                <span><strong>6'5"</strong><small>Height</small></span>
-                <span><strong>SG / PG</strong><small>Position</small></span>
-                <span><strong>3.7</strong><small>High School GPA</small></span>
-                <span><strong>2024</strong><small>Class</small></span>
-              </div>
-              <div class="tags">
-                <span>Rigby High School</span>
-                <span>Fluent Spanish</span>
-                <span>Two-year service mission in Ecuador</span>
-              </div>
-            </div>
-          </div>
-        </section>
+          </section>
 
-        <section class="panel" id="outreach">
+          <section class="stat-tiles" aria-label="Royce Castle key recruiting profile facts">
+            <span><i data-lucide="ruler"></i><small>Height</small><strong>6'5"</strong></span>
+            <span><i data-lucide="badge"></i><small>Roles</small><strong>SG /<br>Playmaker</strong></span>
+            <span><i data-lucide="landmark"></i><small>High School</small><strong>Rigby HS</strong></span>
+            <span><i data-lucide="graduation-cap"></i><small>Grad Year</small><strong>2024</strong></span>
+            <span><i data-lucide="star"></i><small>GPA</small><strong>3.7</strong></span>
+            <span><i data-lucide="shield"></i><small>Defense</small><strong>Lockdown</strong></span>
+          </section>
+        </div>
+
+        <section class="panel email-panel" id="outreach">
           <div class="section-heading row">
             <div>
               <p class="eyebrow">Outreach</p>
@@ -71,19 +77,69 @@
             <label>From email<input id="from-email" type="email" value="erik@puricloud.com"></label>
             <label>Additional emails<input id="cc-email" placeholder="Optional CC list"></label>
           </div>
-          <label>To<input id="to-email" readonly></label>
-          <label>Subject<input id="subject"></label>
-          <label>Email body<textarea id="email-body" rows="11"></textarea></label>
-          <div class="button-row">
-            <button class="primary-button" id="copy-email" type="button"><i data-lucide="copy"></i>Copy Email</button>
-            <button class="secondary-button" id="open-mail" type="button"><i data-lucide="mail"></i>Open Mail App</button>
-            <button class="ghost-button" id="mark-sent" type="button"><i data-lucide="check"></i>Mark Sent</button>
+          <div class="field-grid email-grid">
+            <label>To<input id="to-email" readonly></label>
+            <label>Subject<input id="subject"></label>
           </div>
-          <p class="status" id="status"></p>
+          <label>Email body<textarea id="email-body" rows="8"></textarea></label>
+          <div class="email-footer">
+            <div class="button-row">
+              <button class="primary-button" id="copy-email" type="button"><i data-lucide="copy"></i>Copy Email</button>
+              <button class="secondary-button" id="open-mail" type="button"><i data-lucide="mail"></i>Open Mail App</button>
+              <button class="ghost-button" id="mark-sent" type="button"><i data-lucide="check"></i>Mark Sent</button>
+            </div>
+            <p class="status" id="status">Ready to send</p>
+          </div>
         </section>
       </section>
 
-      <section class="dashboard" id="dashboard">
+      <section class="lower-grid">
+        <section class="panel queue-panel">
+          <div class="section-heading row">
+            <div>
+              <p class="eyebrow">Ready Queue</p>
+              <h2>Next Schools</h2>
+            </div>
+            <div class="button-row">
+              <span class="count-pill">D1 Programs</span>
+              <a class="ghost-button compact" href="contacts.html">View All Worksheets <i data-lucide="external-link"></i></a>
+            </div>
+          </div>
+          <div id="queue" class="queue"></div>
+          <div class="queue-footer">
+            <span><i data-lucide="calendar-check"></i>Click a school to load its contact and draft your email.</span>
+            <span id="contact-count">Showing next 0</span>
+          </div>
+        </section>
+
+        <section class="panel video-panel" id="video">
+          <div class="section-heading row">
+            <div>
+              <p class="eyebrow">Video Library</p>
+              <h2>Royce Castle Highlight</h2>
+            </div>
+            <a class="ghost-button compact" href="assets/video/royce-castle-highlight.mp4" target="_blank" rel="noreferrer">Open <i data-lucide="external-link"></i></a>
+          </div>
+          <div class="video-frame">
+            <video src="assets/video/royce-castle-highlight.mp4" controls playsinline></video>
+          </div>
+          <p class="media-caption">MP4 highlight clip for coach follow-up.</p>
+        </section>
+
+        <section class="panel music-panel">
+          <div class="section-heading row">
+            <div>
+              <p class="eyebrow">Music Ideas</p>
+              <h2>Recruiting Soundtrack</h2>
+            </div>
+            <button class="ghost-button compact" type="button">View All</button>
+          </div>
+          <div id="songs" class="songs"></div>
+          <button class="spotify-button" type="button"><i data-lucide="music"></i>Open in Spotify</button>
+        </section>
+      </section>
+
+      <section class="dashboard utility-section" id="dashboard">
         <aside class="panel profile-panel">
           <div class="section-heading">
             <p class="eyebrow">Portfolio</p>
@@ -93,7 +149,7 @@
             <label>Height<input id="height" value="6'5&quot;"></label>
             <label>Vertical<input id="vertical" placeholder="Add vertical"></label>
             <label>Primary position<input id="position" value="Shooting Guard"></label>
-            <label>Secondary position<input id="secondary" value="Point Guard"></label>
+            <label>Secondary role<input id="secondary" value="Playmaker"></label>
             <label>Graduation year<input id="grad" value="2024"></label>
             <label>High school<input id="school" value="Rigby High School"></label>
             <label>High school GPA<input id="gpa" value="3.7"></label>
@@ -106,38 +162,15 @@
           </div>
         </aside>
       </section>
-
-      <section class="panel queue-panel">
-        <div class="section-heading row">
-          <div>
-            <p class="eyebrow">Ready Queue</p>
-            <h2>Next Schools</h2>
-          </div>
-          <span id="contact-count" class="count-pill">0 contacts</span>
-        </div>
-        <div id="queue" class="queue"></div>
-      </section>
-
-      <section class="media-grid" id="video">
-        <div class="panel">
-          <div class="section-heading">
-            <p class="eyebrow">Video Library</p>
-            <h2>Bundled Highlight Clip</h2>
-          </div>
-          <video src="assets/video/royce-castle-highlight.mp4" controls playsinline></video>
-        </div>
-        <div class="panel">
-          <div class="section-heading">
-            <p class="eyebrow">Music Ideas</p>
-            <h2>Recruiting Soundtrack</h2>
-          </div>
-          <div id="songs" class="songs"></div>
-        </div>
-      </section>
     </main>
+
+    <footer class="app-footer">
+      <span><i data-lucide="shield-check"></i>Work hard. Be coachable. Serve others. Honor the game.</span>
+      <span>Recruiting Studio v1.0 <strong>RC</strong></span>
+    </footer>
 
     <div id="toast" class="toast" role="status"></div>
     <script src="contacts-data.js"></script>
-    <script src="app.js?v=20260608-premium"></script>
+    <script src="app.js?v=20260608-mockup-final"></script>
   </body>
 </html>
