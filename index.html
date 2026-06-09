@@ -154,7 +154,7 @@
             <p class="eyebrow">Participant signup</p>
             <h2>Register for camp.</h2>
             <p>
-              Guardian information is required for minors. After submitting, the
+              Guardian information is required for child participants. After submitting, the
               app opens a Venmo checkout panel and stores the participant record
               for admin review.
             </p>
@@ -164,7 +164,24 @@
             <div class="form-grid two">
               <label>First name<input name="firstName" autocomplete="given-name" required></label>
               <label>Last name<input name="lastName" autocomplete="family-name" required></label>
-              <label>Age<input name="age" type="number" min="4" max="99" required></label>
+              <label>Grade
+                <select name="grade" required>
+                  <option value="">Select</option>
+                  <option value="KG">Kindergarten</option>
+                  <option value="1">1st Grade</option>
+                  <option value="2">2nd Grade</option>
+                  <option value="3">3rd Grade</option>
+                  <option value="4">4th Grade</option>
+                  <option value="5">5th Grade</option>
+                  <option value="6">6th Grade</option>
+                  <option value="7">7th Grade</option>
+                  <option value="8">8th Grade</option>
+                  <option value="9">9th Grade</option>
+                  <option value="10">10th Grade</option>
+                  <option value="11">11th Grade</option>
+                  <option value="12">12th Grade</option>
+                </select>
+              </label>
               <label>Gender
                 <select name="gender" required>
                   <option value="">Select</option>
@@ -173,7 +190,7 @@
                   <option>Prefer not to say</option>
                 </select>
               </label>
-              <label class="full-field">Parent/guardian name <span class="field-hint">(required if under 18)</span><input name="guardianName" autocomplete="name"></label>
+              <label class="full-field">Parent/guardian name <span class="field-hint">(required for child participants)</span><input name="guardianName" autocomplete="name"></label>
               <label>Parent/guardian email<input name="guardianEmail" type="email" autocomplete="email"></label>
               <label>Parent/guardian phone<input name="guardianPhone" type="tel" autocomplete="tel"></label>
               <label class="full-field">Street address<input name="address" autocomplete="street-address" required></label>
@@ -223,7 +240,6 @@
                 <label>Relationship to participant
                   <select name="waiverSignerRole" required>
                     <option value="">Select</option>
-                    <option>Self</option>
                     <option>Parent</option>
                     <option>Legal guardian</option>
                     <option>Other authorized adult</option>
@@ -383,7 +399,7 @@
             <div class="admin-panel active" data-panel="participants">
               <div class="toolbar">
                 <label>Search<input id="participant-search" placeholder="Name, email, guardian, phone, shirt size"></label>
-                <label>Age filter<select id="participant-age-filter"><option value="all">All ages</option><option value="minor">Under 18</option><option value="adult">18 and older</option><option value="unknown">Unknown age</option></select></label>
+                <label>Grade filter<select id="participant-grade-filter"><option value="all">All grades</option><option value="youth">1st-6th Grade</option><option value="teen">7th-12th Grade</option><option value="unknown">Unknown grade</option></select></label>
                 <label>Session<select id="participant-event-filter"><option value="all">All sessions</option></select></label>
                 <label>Payment<select id="participant-payment-filter"><option value="all">All payment states</option><option value="paid">Paid</option><option value="pending">Pending</option></select></label>
               </div>
@@ -393,7 +409,7 @@
                     <thead>
                       <tr>
                         <th>Name</th>
-                        <th>Age</th>
+                        <th>Grade</th>
                         <th>Session</th>
                         <th>T-shirt</th>
                         <th>Phone</th>
@@ -629,7 +645,7 @@
           <div class="form-grid two">
             <label>First name<input name="firstName" autocomplete="given-name" placeholder="Unknown"></label>
             <label>Last name<input name="lastName" autocomplete="family-name" placeholder="Participant"></label>
-            <label>Age<select name="age" id="manual-age"></select></label>
+            <label>Grade<select name="grade" id="manual-grade"></select></label>
             <label>Gender
               <select name="gender">
                 <option>Unknown</option>
@@ -699,7 +715,6 @@
             <label>Relationship to participant
               <select name="waiverSignerRole">
                 <option value="">Select</option>
-                <option>Self</option>
                 <option>Parent</option>
                 <option>Legal guardian</option>
                 <option>Other authorized adult</option>
@@ -755,6 +770,6 @@
     </dialog>
 
     <div class="toast" id="toast" role="status"></div>
-    <script src="app.js?v=20260603-crm-vault"></script>
+    <script src="app.js?v=20260609-grade-directory"></script>
   </body>
 </html>

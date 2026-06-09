@@ -10,7 +10,7 @@ Open `index.html` or serve the folder locally. The app includes:
 - American Heritage School and American Heritage Patriots logo/campus imagery used on the public pages.
 - Flyer/brochure library with the original flyer, active public flyer selection, upload, editable copy fields, generated printable flyer graphics, previews, and downloads.
 - Camp event list for Session 1, Session 2, and the both-sessions discount.
-- Participant signup form with age, gender, guardian, address, email, phone, session, and grade track.
+- Participant signup form with grade, gender, guardian, address, email, phone, session, and grade track.
 - Required waiver/release during signup with typed electronic signature, electronic-record consent, signed waiver snapshot, and customer/admin print options.
 - Venmo checkout links for `@bcastle1`, payment memo generation, payment history, and demo receipt recording.
 - Team store with fit, size, quantity, and admin-editable pricing.

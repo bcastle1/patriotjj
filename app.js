@@ -14,6 +14,89 @@ const EXAMPLE_PARTICIPANT_IDS = new Set(["participant-avery", "participant-luke"
 const EXAMPLE_PARTICIPANT_EMAILS = new Set(["avery.family@example.com", "ellis.family@example.com"]);
 const EXAMPLE_PAYMENT_IDS = new Set(["payment-avery", "payment-luke"]);
 const T_SHIRT_PRICE = 22;
+const DIRECTORY_IMPORT_LABEL = "AHS Directory 2026-06-02";
+const GRADE_OPTIONS = ["Unknown", "KG", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"];
+const DEPRECATED_DIRECTORY_PARTICIPANT_IDS = new Set([
+  "participant-ahs-lincoln-hall",
+  "participant-ahs-skye-hall"
+]);
+const SEEDED_DIRECTORY_PARTICIPANTS = [
+  {
+    id: "participant-ahs-maki-boley",
+    firstName: "Maki",
+    lastName: "Boley",
+    grade: "2",
+    gender: "Unknown",
+    guardianName: "Chalalai Boley",
+    guardianEmail: "chalalai.ch@gmail.com",
+    guardianPhone: "801-860-2720",
+    address: "American Fork, UT",
+    email: "",
+    phone: "",
+    eventId: "unknown",
+    trackId: "youth",
+    shirtSize: "Unknown",
+    notes: `${DIRECTORY_IMPORT_LABEL}: child listed in 2nd grade. Guardian/contact Chalalai Boley. Household Boley (H0065). Address source was city-only. Source rows: Contacts 128; Related Students 126.`,
+    signedUpAt: "2026-06-02T12:00:00.000Z",
+    manualEntry: true,
+    directorySource: {
+      file: "2026.06.02_AHS_DIRECTORY.xlsx",
+      householdId: "H0065",
+      contactRow: 128,
+      studentRow: 126
+    }
+  },
+  {
+    id: "participant-ahs-aspen-hall",
+    firstName: "Aspen",
+    lastName: "Hall",
+    grade: "1",
+    gender: "Unknown",
+    guardianName: "Seantay Hall",
+    guardianEmail: "seantayhall@gmail.com",
+    guardianPhone: "801-888-6394",
+    address: "Pleasant Grove, UT",
+    email: "",
+    phone: "",
+    eventId: "unknown",
+    trackId: "youth",
+    shirtSize: "Unknown",
+    notes: `${DIRECTORY_IMPORT_LABEL}: child listed in 1st grade. Guardian/contact Seantay Hall. Only Aspen Hall is participating per admin instruction. Household Hall (H0228). Address source was city-only. Source rows: Contacts 439; Related Students 442.`,
+    signedUpAt: "2026-06-02T12:03:00.000Z",
+    manualEntry: true,
+    directorySource: {
+      file: "2026.06.02_AHS_DIRECTORY.xlsx",
+      householdId: "H0228",
+      contactRow: 439,
+      studentRow: 442
+    }
+  },
+  {
+    id: "participant-ahs-elijah-smith",
+    firstName: "Elijah",
+    lastName: "Smith",
+    grade: "3",
+    gender: "Unknown",
+    guardianName: "Lindsay Smith",
+    guardianEmail: "lsmith@ahsmail.com",
+    guardianPhone: "801-473-8337",
+    address: "4903 W Summerfield Drive, Highland, UT 84003-8983",
+    email: "",
+    phone: "",
+    eventId: "unknown",
+    trackId: "youth",
+    shirtSize: "Unknown",
+    notes: `${DIRECTORY_IMPORT_LABEL}: child listed in 3rd grade. Guardian/contact Lindsay Smith. Household Smith (H0520). Source rows: Contacts 1000; Related Students 1020.`,
+    signedUpAt: "2026-06-02T12:04:00.000Z",
+    manualEntry: true,
+    directorySource: {
+      file: "2026.06.02_AHS_DIRECTORY.xlsx",
+      householdId: "H0520",
+      contactRow: 1000,
+      studentRow: 1020
+    }
+  }
+];
 const STORE_SHIRT_ITEMS = [
   {
     id: "shirt-navy",
@@ -116,7 +199,7 @@ const refs = {
   restoreCrmBackup: $("#restore-crm-backup"),
   adminMetrics: $("#admin-metrics"),
   participantSearch: $("#participant-search"),
-  participantAgeFilter: $("#participant-age-filter"),
+  participantGradeFilter: $("#participant-grade-filter"),
   participantEventFilter: $("#participant-event-filter"),
   participantPaymentFilter: $("#participant-payment-filter"),
   participantsTable: $("#participants-table"),
@@ -155,7 +238,7 @@ const refs = {
   participantModalEyebrow: $("#participant-modal-eyebrow"),
   participantModalTitle: $("#participant-modal-title"),
   participantSubmitLabel: $("#participant-submit-label"),
-  manualAge: $("#manual-age"),
+  manualGrade: $("#manual-grade"),
   manualEvent: $("#manual-event"),
   manualTrack: $("#manual-track"),
   exportParticipants: $("#export-participants"),
@@ -220,7 +303,7 @@ function seedState() {
         dateLine: "July 20, 21, 22",
         dayLine: "Monday, Tuesday, Wednesday",
         venue: "American Heritage Schools, American Fork",
-        description: "A second three-day camp with the same age tracks and a fresh set of drills, games, and leadership reps.",
+        description: "A second three-day camp with the same grade tracks and a fresh set of drills, games, and leadership reps.",
         active: true,
         tracks: [
           { id: "youth", label: "1st-6th Grade", time: "1:00 - 3:00 PM", price: 150 },
@@ -241,7 +324,7 @@ function seedState() {
         ]
       }
     ],
-    participants: [],
+    participants: SEEDED_DIRECTORY_PARTICIPANTS,
     payments: [],
     storeItems: defaultStoreItems(),
     storeOrders: [],
@@ -249,7 +332,7 @@ function seedState() {
       {
         id: "faq-experience",
         question: "Does my child need prior martial arts experience?",
-        answer: "No. The camp is built for beginners and experienced students. Instructors scale drills by age, size, and confidence level."
+        answer: "No. The camp is built for beginners and experienced students. Instructors scale drills by grade group, size, and confidence level."
       },
       {
         id: "faq-bring",
@@ -335,13 +418,18 @@ function loadState() {
     const stored = readStoredCrmState();
     const merged = mergeState(seedState(), stored || {});
     const { state: cleanedState, changed } = removeExampleAdminRecords(merged);
-    if (changed || stored) {
+    if (changed || stored || hasSeededDirectoryParticipants(cleanedState)) {
       persistCrmState(cleanedState, { preservePrevious: false, updateStatus: false });
     }
     return cleanedState;
   } catch {
     return seedState();
   }
+}
+
+function hasSeededDirectoryParticipants(appState) {
+  const participantIds = new Set((appState.participants || []).map((participant) => participant.id));
+  return SEEDED_DIRECTORY_PARTICIPANTS.every((participant) => participantIds.has(participant.id));
 }
 
 function readStoredCrmState() {
@@ -409,6 +497,7 @@ function mergeState(base, incoming) {
     storeCatalogVersion: STORE_CATALOG_VERSION,
     settings: normalizeSettings({ ...base.settings, ...(incoming.settings || {}) }),
     storeItems: normalizeStoreCatalog(base.storeItems, incoming.storeItems, incoming.storeCatalogVersion),
+    participants: mergeDefaultParticipants(base.participants, incoming.participants),
     faqs: mergeDefaultRows(base.faqs, incoming.faqs),
     reviews: normalizeReviews(base.reviews, incoming.reviews),
     media: {
@@ -427,6 +516,31 @@ function mergeDefaultRows(defaultRows, incomingRows) {
     ...incomingRows,
     ...defaultRows.filter((row) => !incomingIds.has(row.id))
   ];
+}
+
+function mergeDefaultParticipants(defaultParticipants, incomingParticipants) {
+  const incomingRows = Array.isArray(incomingParticipants)
+    ? incomingParticipants.map(normalizeParticipantRecord)
+      .filter((participant) => !DEPRECATED_DIRECTORY_PARTICIPANT_IDS.has(participant.id))
+    : [];
+  const defaultIds = new Set(defaultParticipants.map((participant) => participant.id));
+  const incomingById = new Map(incomingRows.map((participant) => [participant.id, participant]));
+  const defaultRows = defaultParticipants.map((participant) => {
+    const incomingParticipant = incomingById.get(participant.id);
+    return normalizeParticipantRecord(incomingParticipant
+      ? { ...participant, ...incomingParticipant, grade: incomingParticipant.grade || participant.grade }
+      : participant);
+  });
+  const userRows = incomingRows.filter((participant) => !defaultIds.has(participant.id));
+  return [...defaultRows, ...userRows];
+}
+
+function normalizeParticipantRecord(participant = {}) {
+  const normalized = { ...participant };
+  normalized.grade = normalizeGrade(normalized.grade);
+  normalized.gender = clean(normalized.gender) || "Unknown";
+  normalized.shirtSize = clean(normalized.shirtSize) || "Unknown";
+  return normalized;
 }
 
 function removeExampleAdminRecords(appState) {
@@ -709,7 +823,7 @@ function bindEvents() {
   refs.exportCrmBackup.addEventListener("click", exportCrmBackup);
   refs.restoreCrmBackup.addEventListener("change", handleCrmBackupRestore);
   refs.participantSearch.addEventListener("input", renderParticipants);
-  refs.participantAgeFilter.addEventListener("change", renderParticipants);
+  refs.participantGradeFilter.addEventListener("change", renderParticipants);
   refs.participantEventFilter.addEventListener("change", renderParticipants);
   refs.participantPaymentFilter.addEventListener("change", renderParticipants);
   refs.participantsTable.addEventListener("click", (event) => {
@@ -883,14 +997,10 @@ function renderTrackOptions() {
 }
 
 function renderManualParticipantOptions(preferredEventId = "unknown", preferredTrackId = "unknown") {
-  if (!refs.manualEvent || !refs.manualTrack || !refs.manualAge) return;
-  refs.manualAge.innerHTML = [
-    `<option value="unknown">Unknown</option>`,
-    ...Array.from({ length: 96 }, (_, index) => {
-      const age = index + 4;
-      return `<option value="${age}">${age}</option>`;
-    })
-  ].join("");
+  if (!refs.manualEvent || !refs.manualTrack || !refs.manualGrade) return;
+  refs.manualGrade.innerHTML = GRADE_OPTIONS
+    .map((grade) => `<option value="${escapeAttr(grade)}">${escapeHtml(gradeLabel(grade))}</option>`)
+    .join("");
   refs.manualEvent.innerHTML = [
     `<option value="unknown">Unknown session</option>`,
     ...state.events
@@ -945,18 +1055,18 @@ function renderSignupWaiverPreview() {
 function handleSignup(event) {
   event.preventDefault();
   const formData = new FormData(refs.signupForm);
-  const age = Number(formData.get("age"));
+  const grade = normalizeGrade(formData.get("grade"));
   const guardianName = String(formData.get("guardianName") || "").trim();
   const signerName = clean(formData.get("waiverSignerName"));
   const signerRole = clean(formData.get("waiverSignerRole"));
   const signature = clean(formData.get("waiverSignature"));
-  if (age < 18 && !guardianName) {
-    toast("Guardian name is required for minors.");
+  if (!guardianName) {
+    toast("Guardian name is required for child participants.");
     refs.signupForm.elements.guardianName.focus();
     return;
   }
-  if (age < 18 && signerRole === "Self") {
-    toast("A parent or legal guardian must sign for minors.");
+  if (signerRole === "Self") {
+    toast("A parent or legal guardian must sign for child participants.");
     refs.signupForm.elements.waiverSignerRole.focus();
     return;
   }
@@ -970,7 +1080,7 @@ function handleSignup(event) {
     id: makeId("participant"),
     firstName: clean(formData.get("firstName")),
     lastName: clean(formData.get("lastName")),
-    age,
+    grade,
     gender: clean(formData.get("gender")),
     guardianName,
     guardianEmail: clean(formData.get("guardianEmail")),
@@ -1038,7 +1148,7 @@ function fillParticipantForm(participant) {
   const payment = participant ? state.payments.find((item) => item.participantId === participant.id) : null;
   elements.firstName.value = participant?.firstName || "";
   elements.lastName.value = participant?.lastName || "";
-  elements.age.value = isKnownAge(participant?.age) ? String(Number(participant.age)) : "unknown";
+  elements.grade.value = normalizeGrade(participant?.grade);
   setSelectValue(elements.gender, participant?.gender || "Unknown", "Unknown");
   elements.email.value = participant?.email || "";
   elements.phone.value = participant?.phone || "";
@@ -1097,8 +1207,8 @@ function handleManualParticipantSubmit(event) {
     ? state.participants.find((item) => item.id === editingParticipantId)
     : null;
   const previousWaiver = existingParticipant?.waiver;
-  const age = normalizeManualAge(formData.get("age"));
-  const guardianName = clean(formData.get("guardianName")) || (isKnownAge(age) && Number(age) < 18 ? "Unknown" : "");
+  const grade = normalizeGrade(formData.get("grade"));
+  const guardianName = clean(formData.get("guardianName")) || "Unknown";
   const firstName = clean(formData.get("firstName"));
   const lastName = clean(formData.get("lastName"));
 
@@ -1107,7 +1217,7 @@ function handleManualParticipantSubmit(event) {
     id: existingParticipant?.id || makeId("participant"),
     firstName: firstName || "Unknown",
     lastName: lastName || "Participant",
-    age,
+    grade,
     gender: clean(formData.get("gender")) || "Unknown",
     guardianName,
     guardianEmail: clean(formData.get("guardianEmail")),
@@ -1146,9 +1256,9 @@ function applyManualWaiver(participant, formData, previousWaiver) {
   }
 
   const signerName = clean(formData.get("waiverSignerName")) || participant.guardianName || fullName(participant);
-  const signerRole = clean(formData.get("waiverSignerRole")) || (isKnownAge(participant.age) && Number(participant.age) < 18 ? "Parent" : "Self");
-  if (isKnownAge(participant.age) && Number(participant.age) < 18 && signerRole === "Self") {
-    toast("A parent or guardian must be the waiver signer for minors.");
+  const signerRole = clean(formData.get("waiverSignerRole")) || "Parent";
+  if (signerRole === "Self") {
+    toast("A parent or guardian must be the waiver signer for child participants.");
     refs.participantForm.elements.waiverSignerRole.focus();
     return false;
   }
@@ -1423,7 +1533,7 @@ function renderParticipantEventFilter() {
 
 function renderParticipants() {
   const query = refs.participantSearch.value.toLowerCase().trim();
-  const ageFilter = refs.participantAgeFilter.value;
+  const gradeFilter = refs.participantGradeFilter.value;
   const eventFilter = refs.participantEventFilter.value;
   const paymentFilter = refs.participantPaymentFilter.value;
   const rows = state.participants.filter((participant) => {
@@ -1435,14 +1545,15 @@ function renderParticipants() {
       parentEmail(participant),
       parentPhone(participant),
       participant.address,
+      gradeLabel(participantGrade(participant)),
       participant.shirtSize
     ].join(" ").toLowerCase();
     const paymentState = participantPaymentState(participant.id);
-    const knownAge = isKnownAge(participant.age);
+    const participantBand = gradeBand(participantGrade(participant));
     return (
       (!query || searchable.includes(query)) &&
-      (ageFilter === "all" ||
-        (ageFilter === "unknown" ? !knownAge : knownAge && (ageFilter === "minor" ? Number(participant.age) < 18 : Number(participant.age) >= 18))) &&
+      (gradeFilter === "all" ||
+        (gradeFilter === "unknown" ? participantBand === "unknown" : participantBand === gradeFilter)) &&
       (eventFilter === "all" || participant.eventId === eventFilter) &&
       (paymentFilter === "all" || paymentState === paymentFilter)
     );
@@ -1455,7 +1566,7 @@ function renderParticipants() {
       return `
         <tr class="clickable-row" data-participant-id="${participant.id}">
           <td><strong>${escapeHtml(fullName(participant))}</strong><br>${escapeHtml(participantContactEmail(participant) || "No email")}</td>
-          <td>${escapeHtml(ageLabel(participant.age))}</td>
+          <td>${escapeHtml(gradeLabel(participantGrade(participant)))}</td>
           <td>${escapeHtml(event?.title || "Unknown")}<br>${escapeHtml(trackLabel(participant.eventId, participant.trackId))}</td>
           <td>${escapeHtml(participant.shirtSize || "N/A")}</td>
           <td>${escapeHtml(participantContactPhone(participant) || "N/A")}${clean(participant.phone) && parentPhone(participant) && parentPhone(participant) !== clean(participant.phone) ? `<br><span class="muted-cell">Parent: ${escapeHtml(parentPhone(participant))}</span>` : ""}</td>
@@ -1496,7 +1607,7 @@ function renderParticipantDetail() {
     <span class="status-pill ${participantPaymentState(participant.id)}">${participantPaymentState(participant.id)}</span>
     <dl class="detail-list">
       <div><dt>Signed up</dt><dd>${formatDateTime(participant.signedUpAt)}</dd></div>
-      <div><dt>Age</dt><dd>${escapeHtml(ageLabel(participant.age))}</dd></div>
+      <div><dt>Grade</dt><dd>${escapeHtml(gradeLabel(participantGrade(participant)))}</dd></div>
       <div><dt>Gender</dt><dd>${escapeHtml(participant.gender || "Unknown")}</dd></div>
       <div><dt>Parent/guardian</dt><dd>${escapeHtml(parentName(participant) || "N/A")}</dd></div>
       <div><dt>Parent email</dt><dd>${escapeHtml(parentEmail(participant) || "N/A")}</dd></div>
@@ -1508,6 +1619,7 @@ function renderParticipantDetail() {
       <div><dt>Track</dt><dd>${escapeHtml(trackLabel(participant.eventId, participant.trackId))}</dd></div>
       <div><dt>Camp T-shirt</dt><dd>${escapeHtml(participant.shirtSize || "N/A")}</dd></div>
       <div><dt>Waiver</dt><dd>${participant.waiver ? `Signed ${formatDateTime(participant.waiver.signedAt)}` : "Not on file"}</dd></div>
+      ${participant.notes ? `<div><dt>Notes</dt><dd>${escapeHtml(participant.notes)}</dd></div>` : ""}
     </dl>
     <h3>Payment history</h3>
     ${payments.map((payment) => `
@@ -1601,7 +1713,7 @@ function signedWaiverHtml(participant) {
     </header>
     <dl class="detail-list waiver-meta">
       <div><dt>Participant</dt><dd>${escapeHtml(waiver.participantName || fullName(participant))}</dd></div>
-      <div><dt>Age</dt><dd>${escapeHtml(ageLabel(waiver.participantAge || participant.age))}</dd></div>
+      <div><dt>Grade</dt><dd>${escapeHtml(gradeLabel(waiver.participantGrade || participantGrade(participant)))}</dd></div>
       <div><dt>Parent/guardian</dt><dd>${escapeHtml(waiver.guardianName || parentName(participant) || "N/A")}</dd></div>
       <div><dt>Session</dt><dd>${escapeHtml(waiver.eventTitle || eventTitle(participant.eventId))}</dd></div>
       <div><dt>Track</dt><dd>${escapeHtml(waiver.trackLabel || trackLabel(participant.eventId, participant.trackId))}</dd></div>
@@ -1658,7 +1770,7 @@ function printSignedWaiver(participantId) {
         <h1>${escapeHtml(participant.waiver.title || "Signed Waiver")}</h1>
         <dl>
           <div><dt>Participant</dt><dd>${escapeHtml(participant.waiver.participantName || fullName(participant))}</dd></div>
-          <div><dt>Age</dt><dd>${escapeHtml(ageLabel(participant.waiver.participantAge || participant.age))}</dd></div>
+          <div><dt>Grade</dt><dd>${escapeHtml(gradeLabel(participant.waiver.participantGrade || participantGrade(participant)))}</dd></div>
           <div><dt>Parent/guardian</dt><dd>${escapeHtml(participant.waiver.guardianName || parentName(participant) || "N/A")}</dd></div>
           <div><dt>Session</dt><dd>${escapeHtml(participant.waiver.eventTitle || eventTitle(participant.eventId))}</dd></div>
           <div><dt>Track</dt><dd>${escapeHtml(participant.waiver.trackLabel || trackLabel(participant.eventId, participant.trackId))}</dd></div>
@@ -2667,11 +2779,11 @@ function switchAdminTab(tabName) {
 
 function exportParticipantsCsv() {
   const rows = [
-    ["First Name", "Last Name", "Age", "Gender", "Parent/Guardian Name", "Parent/Guardian Email", "Parent/Guardian Phone", "Address", "Participant Email", "Participant Phone", "Session", "Track", "Camp T-shirt Size", "Signed Up", "Payment", "Waiver Signed", "Waiver Signer"],
+    ["First Name", "Last Name", "Grade", "Gender", "Parent/Guardian Name", "Parent/Guardian Email", "Parent/Guardian Phone", "Address", "Participant Email", "Participant Phone", "Session", "Track", "Camp T-shirt Size", "Signed Up", "Payment", "Waiver Signed", "Waiver Signer", "Notes"],
     ...state.participants.map((participant) => [
       participant.firstName,
       participant.lastName,
-      ageLabel(participant.age),
+      gradeLabel(participantGrade(participant)),
       participant.gender || "Unknown",
       parentName(participant),
       parentEmail(participant),
@@ -2685,7 +2797,8 @@ function exportParticipantsCsv() {
       formatDateTime(participant.signedUpAt),
       participantPaymentState(participant.id),
       participant.waiver?.signedAt ? formatDateTime(participant.waiver.signedAt) : "",
-      participant.waiver?.signerName || ""
+      participant.waiver?.signerName || "",
+      participant.notes || ""
     ])
   ];
   const csv = rows.map((row) => row.map(csvCell).join(",")).join("\n");
@@ -2763,6 +2876,8 @@ function eventTitle(eventId) {
 function trackLabel(eventId, trackId) {
   const event = state.events.find((item) => item.id === eventId);
   const track = event?.tracks.find((item) => item.id === trackId);
+  if (!event && trackId === "youth") return "1st-6th Grade";
+  if (!event && trackId === "teen") return "7th-12th Grade";
   return track ? `${track.label} | ${track.time}` : "Unknown";
 }
 
@@ -2790,7 +2905,7 @@ function createSignedWaiver(participant, signatureData) {
     signature: signatureData.signerName,
     signedAt,
     participantName: fullName(participant),
-    participantAge: participant.age,
+    participantGrade: participantGrade(participant),
     guardianName: parentName(participant),
     eventTitle: eventTitle(participant.eventId),
     trackLabel: trackLabel(participant.eventId, participant.trackId),
@@ -2817,19 +2932,54 @@ function participantPaymentState(participantId) {
   return payments.some((payment) => payment.status === "paid") ? "paid" : "pending";
 }
 
-function normalizeManualAge(value) {
-  const cleaned = clean(value).toLowerCase();
-  if (!cleaned || cleaned === "unknown") return "Unknown";
-  const age = Number(cleaned);
-  return Number.isFinite(age) ? age : "Unknown";
+function normalizeGrade(value) {
+  const cleaned = clean(value);
+  if (!cleaned || cleaned.toLowerCase() === "unknown") return "Unknown";
+  const upper = cleaned.toUpperCase();
+  if (["K", "KG", "KINDERGARTEN"].includes(upper)) return "KG";
+  const gradeMatch = cleaned.match(/^\d{1,2}/);
+  if (gradeMatch) {
+    const grade = Number(gradeMatch[0]);
+    if (grade >= 1 && grade <= 12) return String(grade);
+  }
+  return cleaned;
 }
 
-function isKnownAge(value) {
-  return value !== "" && value !== null && value !== undefined && Number.isFinite(Number(value));
+function participantGrade(participant) {
+  return normalizeGrade(participant?.grade);
 }
 
-function ageLabel(value) {
-  return isKnownAge(value) ? String(Number(value)) : "Unknown";
+function gradeLabel(value) {
+  const grade = normalizeGrade(value);
+  if (grade === "Unknown") return "Unknown";
+  if (grade === "KG") return "Kindergarten";
+  const numericGrade = Number(grade);
+  if (!Number.isFinite(numericGrade)) return grade;
+  return `${numericGrade}${ordinalSuffix(numericGrade)} Grade`;
+}
+
+function gradeBand(value) {
+  const grade = normalizeGrade(value);
+  if (grade === "KG") return "youth";
+  const numericGrade = Number(grade);
+  if (numericGrade >= 1 && numericGrade <= 6) return "youth";
+  if (numericGrade >= 7 && numericGrade <= 12) return "teen";
+  return "unknown";
+}
+
+function ordinalSuffix(value) {
+  const teen = value % 100;
+  if (teen >= 11 && teen <= 13) return "th";
+  switch (value % 10) {
+    case 1:
+      return "st";
+    case 2:
+      return "nd";
+    case 3:
+      return "rd";
+    default:
+      return "th";
+  }
 }
 
 function fullName(participant) {
