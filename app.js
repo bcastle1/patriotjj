@@ -274,7 +274,7 @@ function seedState() {
     settings: {
       contactEmail: "info@patriotjj.com",
       phone: "",
-      website: "https://www.patriotjj.com/",
+      website: "https://patriotjj.com/",
       venmoHandle: "bcastle1",
       publicVideoUrl: "",
       publicVideoTitle: `${PROGRAM_NAME} Summer Camps`,
@@ -610,7 +610,7 @@ function normalizeSettings(settings) {
   ]);
   const websiteValue = String(normalized.website || "").trim().toLowerCase().replace(/\/+$/, "");
   if (homePageSiteValues.has(websiteValue)) {
-    normalized.website = "https://www.patriotjj.com/";
+    normalized.website = "https://patriotjj.com/";
   }
   if (normalized.publicVideoTitle === "Patriot Jiu Jitsu Summer Camps") {
     normalized.publicVideoTitle = `${PROGRAM_NAME} Summer Camps`;
@@ -893,7 +893,7 @@ function applyPublicSettings() {
   const emailHref = `mailto:${state.settings.contactEmail}?subject=${encodeURIComponent(`${PROGRAM_NAME} question`)}`;
   refs.heroEmail.href = emailHref;
   refs.contactEmail.href = emailHref;
-  refs.contactSite.href = state.settings.website || "https://www.patriotjj.com/";
+  refs.contactSite.href = state.settings.website || "https://patriotjj.com/";
   refs.contactVenmo.href = venmoProfileUrl();
   refs.contactVenmo.innerHTML = `<i data-lucide="badge-dollar-sign"></i>Venmo @${escapeHtml(cleanVenmoHandle())}`;
   const activeFlyer = getActiveFlyer();
