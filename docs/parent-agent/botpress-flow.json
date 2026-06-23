@@ -1,0 +1,197 @@
+{
+  "name": "PatriotJJ Recruiting and Parent Agent",
+  "version": "1.0.0",
+  "entryNode": "welcome",
+  "tone": [
+    "warm",
+    "confident",
+    "parent-friendly",
+    "safety-conscious",
+    "values-based",
+    "clear and concise"
+  ],
+  "variables": {
+    "parentName": "",
+    "parentEmail": "",
+    "parentPhone": "",
+    "studentName": "",
+    "studentAge": "",
+    "grade": "",
+    "experience": "",
+    "goals": "",
+    "safetyNotes": "",
+    "preferredTrialDate": "",
+    "preferredTrialTime": "",
+    "recommendation": "",
+    "intent": ""
+  },
+  "knowledgeBaseFiles": [
+    "docs/parent-agent/parent-faq-knowledge-base.md"
+  ],
+  "nodes": [
+    {
+      "id": "welcome",
+      "type": "message",
+      "copy": "Welcome to Patriot Jiu-Jitsu. We help students build discipline, confidence, fitness, resilience, respect, self-control, real-world self-defense, and positive peer relationships. What would you like help with today?",
+      "quickReplies": [
+        "Schedule a trial class",
+        "View class schedule",
+        "Learn pricing",
+        "Register my child",
+        "Ask a question",
+        "Talk to a coach"
+      ],
+      "routes": {
+        "Schedule a trial class": "student_fit",
+        "View class schedule": "schedule",
+        "Learn pricing": "pricing",
+        "Register my child": "registration",
+        "Ask a question": "faq",
+        "Talk to a coach": "coach_follow_up"
+      }
+    },
+    {
+      "id": "student_fit",
+      "type": "form",
+      "copy": "I can help recommend the best next step. A parent or guardian must be involved for minors.",
+      "fields": [
+        { "name": "parentName", "label": "Parent or guardian name", "required": true },
+        { "name": "parentEmail", "label": "Parent email", "required": true },
+        { "name": "parentPhone", "label": "Parent phone", "required": true },
+        { "name": "studentName", "label": "Student name", "required": true },
+        { "name": "studentAge", "label": "Student age", "required": false },
+        { "name": "grade", "label": "Grade", "required": false },
+        { "name": "experience", "label": "Prior martial arts or wrestling experience", "required": false },
+        { "name": "goals", "label": "Primary goals", "required": false },
+        { "name": "safetyNotes", "label": "Safety or medical considerations for staff", "required": false }
+      ],
+      "next": "recommendation"
+    },
+    {
+      "id": "recommendation",
+      "type": "logic",
+      "rules": [
+        {
+          "if": "safetyNotes is present",
+          "set": "recommendation",
+          "value": "Coach follow-up or private evaluation before class."
+        },
+        {
+          "if": "grade is 7 through 12 or studentAge >= 13",
+          "set": "recommendation",
+          "value": "Teen class or introductory teen trial."
+        },
+        {
+          "if": "grade is kindergarten through 6 or studentAge <= 12",
+          "set": "recommendation",
+          "value": "Beginner youth class or introductory youth trial."
+        },
+        {
+          "if": "experience includes wrestling, martial arts, or returning student",
+          "set": "recommendation",
+          "value": "Introductory trial with coach placement review."
+        }
+      ],
+      "fallback": "Staff follow-up to confirm the right class fit.",
+      "next": "schedule_trial"
+    },
+    {
+      "id": "schedule_trial",
+      "type": "form",
+      "copy": "Recommended next step: {{recommendation}}. What trial date and time works best? Staff will confirm availability.",
+      "fields": [
+        { "name": "preferredTrialDate", "label": "Preferred trial date", "required": false },
+        { "name": "preferredTrialTime", "label": "Preferred time", "required": false }
+      ],
+      "next": "capture_parent_lead"
+    },
+    {
+      "id": "capture_parent_lead",
+      "type": "action",
+      "action": "POST https://patriotjj.com/api/parent-agent-lead",
+      "body": {
+        "source": "botpress-parent-agent",
+        "intent": "trial_class",
+        "parentName": "{{parentName}}",
+        "parentEmail": "{{parentEmail}}",
+        "parentPhone": "{{parentPhone}}",
+        "studentName": "{{studentName}}",
+        "studentAge": "{{studentAge}}",
+        "grade": "{{grade}}",
+        "experience": "{{experience}}",
+        "goals": "{{goals}}",
+        "preferredDate": "{{preferredTrialDate}}",
+        "preferredTime": "{{preferredTrialTime}}",
+        "safetyNotes": "{{safetyNotes}}",
+        "recommendation": "{{recommendation}}",
+        "followUpStatus": "needs_confirmation",
+        "registrationStatus": "lead"
+      },
+      "next": "trial_confirmation"
+    },
+    {
+      "id": "trial_confirmation",
+      "type": "message",
+      "copy": "Thanks. I captured your trial request and notified staff. A coach or staff member should confirm availability before your student participates. You can also complete registration and the waiver on this site.",
+      "quickReplies": [
+        "Register my child",
+        "Ask another question",
+        "Talk to a coach"
+      ],
+      "routes": {
+        "Register my child": "registration",
+        "Ask another question": "faq",
+        "Talk to a coach": "coach_follow_up"
+      }
+    },
+    {
+      "id": "schedule",
+      "type": "knowledge",
+      "query": "Current PatriotJJ class schedule, camp schedule, dates, times, age groups",
+      "fallback": "Please check the current camp cards on patriotjj.com or ask staff for the next available class.",
+      "next": "welcome"
+    },
+    {
+      "id": "pricing",
+      "type": "knowledge",
+      "query": "Current PatriotJJ pricing, payment, registration options",
+      "fallback": "Please review the current session cards and payment instructions on patriotjj.com.",
+      "next": "welcome"
+    },
+    {
+      "id": "registration",
+      "type": "message",
+      "copy": "Registration is completed on patriotjj.com. A parent or guardian enters student and emergency details, reviews the waiver, signs electronically, and follows the payment instructions when available.",
+      "actions": [
+        { "label": "Open registration", "url": "https://patriotjj.com/#signup" }
+      ],
+      "next": "welcome"
+    },
+    {
+      "id": "faq",
+      "type": "knowledge",
+      "query": "{{lastUserMessage}}",
+      "guardrails": [
+        "Do not give medical advice.",
+        "Do not promise specific outcomes.",
+        "Escalate injury, health, safety, or placement concerns to staff.",
+        "Require parent or guardian involvement for minors.",
+        "Mention waiver requirements before participation."
+      ],
+      "next": "welcome"
+    },
+    {
+      "id": "coach_follow_up",
+      "type": "form",
+      "copy": "I can help staff follow up. Calls are only appropriate when a parent requests contact and provides a phone number.",
+      "fields": [
+        { "name": "parentName", "label": "Parent or guardian name", "required": true },
+        { "name": "parentEmail", "label": "Parent email", "required": false },
+        { "name": "parentPhone", "label": "Parent phone", "required": true },
+        { "name": "studentName", "label": "Student name", "required": false },
+        { "name": "goals", "label": "What would you like to discuss?", "required": true }
+      ],
+      "next": "capture_parent_lead"
+    }
+  ]
+}

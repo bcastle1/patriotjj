@@ -157,6 +157,19 @@ const OLD_PROGRAM_NAMES = [
   "AHS Patriots Jiu-Jitsu",
   "Patriot Jiu Jitsu"
 ];
+const AGENT_QUESTION_LIMIT = 60;
+const LEAD_INTENT_LABELS = {
+  trial_class: "Trial class",
+  coach_call: "Coach follow-up",
+  registration: "Registration",
+  question: "Parent question"
+};
+const FOLLOW_UP_LABELS = {
+  needs_confirmation: "Needs confirmation",
+  needs_coach: "Needs coach",
+  needs_registration: "Needs registration",
+  followed_up: "Followed up"
+};
 const MEDIA_RELEASE_TEXT =
   `I also give ${PROGRAM_NAME} permission to photograph, video record, audio record, or otherwise capture the participant's image, voice, name, likeness, and participation during program activities. If I am signing as a parent or legal guardian, this permission includes media of my child. ${PROGRAM_NAME} may use this media, in whole or in part, in a respectful manner for program-related purposes, including on its website, social media pages, printed materials, flyers, newsletters, and other promotional or informational communications. I understand this permission is given without payment or additional approval, and that personal contact information will not be published as part of this permission.`;
 const ELECTRONIC_SIGNATURE_TEXT =
@@ -173,6 +186,11 @@ const refs = {
   heroEmail: $("#hero-email"),
   eventList: $("#event-list"),
   eventDetail: $("#event-detail"),
+  agentThread: $("#agent-thread"),
+  agentQueryForm: $("#agent-query-form"),
+  agentQuestion: $("#agent-question"),
+  agentActions: $("#agent-actions"),
+  trialForm: $("#trial-form"),
   signupForm: $("#signup-form"),
   signupEvent: $("#signup-event"),
   signupTrack: $("#signup-track"),
@@ -198,6 +216,9 @@ const refs = {
   exportCrmBackup: $("#export-crm-backup"),
   restoreCrmBackup: $("#restore-crm-backup"),
   adminMetrics: $("#admin-metrics"),
+  leadsTable: $("#leads-table"),
+  leadDetail: $("#lead-detail"),
+  agentQuestionLog: $("#agent-question-log"),
   participantSearch: $("#participant-search"),
   participantGradeFilter: $("#participant-grade-filter"),
   participantEventFilter: $("#participant-event-filter"),
@@ -260,6 +281,7 @@ const refs = {
 let state = loadState();
 let selectedEventId = state.events[0]?.id || "";
 let selectedParticipantId = state.participants[0]?.id || "";
+let selectedLeadId = state.leads?.[0]?.id || "";
 let editingParticipantId = "";
 let pendingCheckout = null;
 const sessionMedia = new Map();
@@ -328,6 +350,8 @@ function seedState() {
     payments: [],
     storeItems: defaultStoreItems(),
     storeOrders: [],
+    leads: [],
+    agentQuestions: [],
     faqs: [
       {
         id: "faq-experience",
@@ -358,6 +382,46 @@ function seedState() {
         id: "faq-payment",
         question: "How do Venmo payments work?",
         answer: `Use @bcastle1 and include ${PROGRAM_NAME} plus the session name in the memo. The app records the payment entry for admin review.`
+      },
+      {
+        id: "faq-trial",
+        question: "Can we schedule a trial class?",
+        answer: "Use the Parent Agent trial request form or send a note with the student's grade, parent contact information, and preferred time. Staff will reply to confirm availability."
+      },
+      {
+        id: "faq-first-class",
+        question: "What should we expect at the first class?",
+        answer: "Students can expect a structured welcome, warmups, safety expectations, beginner-friendly drills, and supervised practice. A parent or guardian should stay involved for minors."
+      },
+      {
+        id: "faq-medical",
+        question: "What if my child has an injury or medical concern?",
+        answer: "The assistant cannot give medical advice. Please tell staff about any injury, health, or safety concern before class, and consult a qualified medical professional when needed."
+      },
+      {
+        id: "faq-belts",
+        question: "How do belt levels work?",
+        answer: "Students are grouped by age, size, experience, and coach judgment. Advancement depends on consistent attendance, safe control, effort, respect, and skill development rather than a promised timeline."
+      },
+      {
+        id: "faq-uniforms",
+        question: "Do students need a uniform?",
+        answer: "For a first trial or camp session, comfortable athletic clothes are fine unless staff says otherwise. If the program requires a gi or rash guard later, staff will explain options."
+      },
+      {
+        id: "faq-observation",
+        question: "Can parents observe?",
+        answer: "Parents are welcome to ask staff about observation expectations. The goal is a focused, respectful class environment where students can listen, learn, and practice safely."
+      },
+      {
+        id: "faq-competition",
+        question: "Is competition required?",
+        answer: "No. Competition can be discussed with a coach for interested students, but the program focus is confidence, discipline, fitness, self-defense, and positive mentorship."
+      },
+      {
+        id: "faq-bullying",
+        question: "Does Jiu-Jitsu help with bullying prevention?",
+        answer: "The program teaches awareness, confidence, boundaries, de-escalation, respect, and safe self-defense principles without promising a specific outcome."
       }
     ],
     reviews: [
@@ -469,7 +533,8 @@ function crmStateScore(appState) {
   const participants = Array.isArray(appState?.participants) ? appState.participants.length : 0;
   const payments = Array.isArray(appState?.payments) ? appState.payments.length : 0;
   const storeOrders = Array.isArray(appState?.storeOrders) ? appState.storeOrders.length : 0;
-  return participants * 10000 + payments * 100 + storeOrders;
+  const leads = Array.isArray(appState?.leads) ? appState.leads.length : 0;
+  return participants * 10000 + leads * 1000 + payments * 100 + storeOrders;
 }
 
 function persistCrmState(appState, options = {}) {
@@ -503,6 +568,8 @@ function mergeState(base, incoming) {
     settings: normalizeSettings({ ...base.settings, ...(incoming.settings || {}) }),
     storeItems: normalizeStoreCatalog(base.storeItems, incoming.storeItems, incoming.storeCatalogVersion),
     participants: mergeDefaultParticipants(base.participants, incoming.participants),
+    leads: normalizeLeads(incoming.leads || base.leads),
+    agentQuestions: normalizeAgentQuestions(incoming.agentQuestions || base.agentQuestions),
     faqs: mergeDefaultRows(base.faqs, incoming.faqs),
     reviews: normalizeReviews(base.reviews, incoming.reviews),
     media: {
@@ -546,6 +613,47 @@ function normalizeParticipantRecord(participant = {}) {
   normalized.gender = clean(normalized.gender) || "Unknown";
   normalized.shirtSize = clean(normalized.shirtSize) || "Unknown";
   return normalized;
+}
+
+function normalizeLeads(leads) {
+  return Array.isArray(leads) ? leads.map(normalizeLeadRecord) : [];
+}
+
+function normalizeLeadRecord(lead = {}) {
+  return {
+    id: lead.id || makeId("lead"),
+    createdAt: lead.createdAt || new Date().toISOString(),
+    source: clean(lead.source) || "parent-agent",
+    intent: clean(lead.intent) || "question",
+    parentName: clean(lead.parentName),
+    parentEmail: clean(lead.parentEmail),
+    parentPhone: clean(lead.parentPhone),
+    studentName: clean(lead.studentName),
+    studentAge: clean(lead.studentAge),
+    grade: normalizeGrade(lead.grade),
+    experience: clean(lead.experience) || "Unknown",
+    goals: clean(lead.goals),
+    preferredDate: clean(lead.preferredDate),
+    preferredTime: clean(lead.preferredTime),
+    safetyNotes: clean(lead.safetyNotes),
+    notes: clean(lead.notes),
+    recommendation: clean(lead.recommendation),
+    followUpStatus: clean(lead.followUpStatus) || "needs_confirmation",
+    registrationStatus: clean(lead.registrationStatus) || "lead",
+    crmStatus: clean(lead.crmStatus) || "local_only",
+    notificationStatus: clean(lead.notificationStatus) || "pending"
+  };
+}
+
+function normalizeAgentQuestions(questions) {
+  return Array.isArray(questions)
+    ? questions.map((question) => ({
+      id: question.id || makeId("question"),
+      question: clean(question.question),
+      topic: clean(question.topic) || "Parent question",
+      createdAt: question.createdAt || new Date().toISOString()
+    })).filter((question) => question.question)
+    : [];
 }
 
 function removeExampleAdminRecords(appState) {
@@ -783,6 +891,16 @@ function bindEvents() {
     selectedEventId = card.dataset.eventId;
     renderEvents();
     renderEventDetail();
+    renderParentAgent();
+  });
+  refs.agentQueryForm.addEventListener("submit", handleAgentQuestion);
+  refs.agentActions.addEventListener("click", handleAgentAction);
+  refs.trialForm.addEventListener("submit", handleTrialRequest);
+  $$("[data-agent-prompt]").forEach((button) => {
+    button.addEventListener("click", () => {
+      refs.agentQuestion.value = button.dataset.agentPrompt || "";
+      renderAgentAnswer(refs.agentQuestion.value);
+    });
   });
 
   refs.signupEvent.addEventListener("change", () => {
@@ -792,6 +910,7 @@ function bindEvents() {
     renderSignupWaiverPreview();
     renderEvents();
     renderEventDetail();
+    renderParentAgent();
   });
   refs.signupTrack.addEventListener("change", () => {
     updateSignupPrice();
@@ -827,6 +946,7 @@ function bindEvents() {
   refs.exportParticipants.addEventListener("click", exportParticipantsCsv);
   refs.exportCrmBackup.addEventListener("click", exportCrmBackup);
   refs.restoreCrmBackup.addEventListener("change", handleCrmBackupRestore);
+  refs.leadsTable.addEventListener("click", handleLeadTableClick);
   refs.participantSearch.addEventListener("input", renderParticipants);
   refs.participantGradeFilter.addEventListener("change", renderParticipants);
   refs.participantEventFilter.addEventListener("change", renderParticipants);
@@ -881,6 +1001,7 @@ function bindEvents() {
 function renderAll() {
   renderEvents();
   renderEventDetail();
+  renderParentAgent();
   renderSignupOptions();
   renderSignupWaiverPreview();
   renderStore();
@@ -913,6 +1034,464 @@ function applyPublicSettings() {
     refs.publicVideo.removeAttribute("src");
     refs.publicVideo.load();
   }
+}
+
+function renderParentAgent() {
+  if (!refs.agentThread || !refs.agentActions) return;
+  const events = activeEvents();
+  const selectedEvent = getSelectedEvent();
+  const headline = events.length
+    ? `I can help with ${events.length} current camp option${events.length === 1 ? "" : "s"}.`
+    : "No active camp sessions are currently listed.";
+  const body = events.length
+    ? `Ask about dates, times, prices, safety, what to bring, registration, payment, or trial classes.\nSelected session: ${selectedEvent.title} | ${selectedEvent.dateLine}.`
+    : "Use the contact button to ask staff about the next available PatriotJJ session.";
+  renderAgentResponse({
+    speaker: "agent",
+    title: headline,
+    body,
+    actions: defaultAgentActions()
+  });
+}
+
+function handleAgentQuestion(event) {
+  event.preventDefault();
+  renderAgentAnswer(refs.agentQuestion.value);
+}
+
+function renderAgentAnswer(question) {
+  const cleanQuestion = clean(question);
+  if (!cleanQuestion) {
+    refs.agentQuestion.focus();
+    toast("Ask a parent question first.");
+    return;
+  }
+  const response = answerParentQuestion(cleanQuestion);
+  recordAgentQuestion(cleanQuestion, response);
+  renderAgentResponse(response);
+}
+
+function answerParentQuestion(question) {
+  const text = question.toLowerCase();
+  if (/(medical|medicine|injur|hurt|asthma|allerg|concussion|doctor|health|condition)/.test(text)) {
+    return {
+      speaker: "agent",
+      title: "Health and safety concerns should go to a coach.",
+      body: "I cannot give medical advice. Please list any injury, medical, or safety consideration in the trial or registration notes and talk with a coach before participation. For medical clearance, consult a qualified medical professional.",
+      actions: [
+        { type: "trial", icon: "shield-alert", label: "Request Trial" },
+        { type: "email", icon: "mail", label: "Email Staff" }
+      ]
+    };
+  }
+  if (/(mission|benefit|confidence|discipline|respect|resilience|mentor|fitness|self-control|self control|defense|bully|bullying|values|faith|family)/.test(text)) {
+    return {
+      speaker: "agent",
+      title: "The program is built around confidence, discipline, and safety.",
+      body: `${PROGRAM_NAME} helps students practice discipline, confidence, fitness, resilience, respect, self-control, real-world self-defense, and positive peer relationships. Coaches keep the message values-based and age-appropriate without promising a specific outcome.`,
+      actions: [
+        { type: "trial", icon: "calendar-plus", label: "Request Trial" },
+        { type: "register", icon: "user-plus", label: "Register" }
+      ]
+    };
+  }
+  if (/(recommend|right class|best class|which class|fit|age group|age|grade|elementary|middle|high school|teen|private evaluation)/.test(text)) {
+    return {
+      speaker: "agent",
+      title: "Class fit depends on age, experience, goals, and safety needs.",
+      body: "Elementary students usually fit the youth track, while middle and high school students usually fit the teen track. Beginners can start with an introductory trial. Returning wrestlers, martial artists, or students with safety considerations should request a coach follow-up or private evaluation.",
+      actions: [
+        { type: "trial", icon: "calendar-plus", label: "Request Trial" },
+        { type: "email", icon: "mail", label: "Ask Staff" }
+      ]
+    };
+  }
+  if (/(coach|call|phone|talk|speak)/.test(text)) {
+    return {
+      speaker: "agent",
+      title: "A coach can follow up directly.",
+      body: "Use the trial request form with your phone number and notes, or email staff with the best time to reach you. Calls should only happen after a parent requests contact and provides a phone number.",
+      actions: [
+        { type: "trial", icon: "phone-call", label: "Request Call" },
+        { type: "email", icon: "mail", label: "Email Staff" }
+      ]
+    };
+  }
+  if (/(trial|try|class|visit|sample|observe)/.test(text)) {
+    return {
+      speaker: "agent",
+      title: "Trial classes are handled by staff confirmation.",
+      body: "Use the trial request form here with the student grade, contact information, and preferred time. It opens an email draft so staff can confirm availability before anything is final.",
+      actions: [
+        { type: "trial", icon: "calendar-plus", label: "Request Trial" },
+        { type: "email", icon: "mail", label: "Email Staff" }
+      ]
+    };
+  }
+  if (/(date|time|when|schedule|session|calendar)/.test(text)) {
+    return {
+      speaker: "agent",
+      title: "Current camp schedule",
+      body: scheduleAnswer(),
+      actions: [
+        { type: "events", icon: "calendar-days", label: "View Camps" },
+        { type: "register", icon: "user-plus", label: "Register" }
+      ]
+    };
+  }
+  if (/(price|pricing|cost|pay|payment|venmo|discount|due|fee)/.test(text)) {
+    return {
+      speaker: "agent",
+      title: "Current pricing",
+      body: pricingAnswer(),
+      actions: [
+        { type: "register", icon: "clipboard-pen-line", label: "Register" },
+        { type: "venmo", icon: "badge-dollar-sign", label: "Open Venmo" }
+      ]
+    };
+  }
+  if (/(register|registration|signup|sign up|enroll|join|waiver)/.test(text)) {
+    return {
+      speaker: "agent",
+      title: "Registration happens on this page.",
+      body: "Choose a camp session, enter the student and guardian details, read and sign the waiver, then use the checkout panel for Venmo payment review.",
+      actions: [
+        { type: "register", icon: "user-plus", label: "Start Registration" },
+        { type: "events", icon: "calendar-check", label: "Compare Sessions" }
+      ]
+    };
+  }
+  if (/(bring|wear|clothing|shirt|gear|water|uniform|gi)/.test(text)) {
+    return faqAgentResponse(
+      "What students should bring",
+      /(bring|wear|clothing|uniform|gi)/,
+      [
+        { type: "register", icon: "shirt", label: "Register" },
+        { type: "email", icon: "mail", label: "Ask Staff" }
+      ]
+    );
+  }
+  if (/(first class|expect|belt|level|parent|observe|competition|compete)/.test(text)) {
+    return faqAgentResponse(
+      "Parent FAQ",
+      /(first class|belt|level|observe|competition|compete)/,
+      [
+        { type: "trial", icon: "calendar-plus", label: "Request Trial" },
+        { type: "email", icon: "mail", label: "Ask Staff" }
+      ]
+    );
+  }
+  if (/(safe|safety|spar|sparring|experience|beginner|new)/.test(text)) {
+    return faqAgentResponse(
+      "Experience and safety",
+      /(experience|sparring|safety)/,
+      [
+        { type: "trial", icon: "shield-check", label: "Request Trial" },
+        { type: "email", icon: "mail", label: "Ask Staff" }
+      ]
+    );
+  }
+  if (/(where|location|address|venue|arena|studio|campus|american heritage)/.test(text)) {
+    return faqAgentResponse(
+      "Camp location",
+      /(where is the camp located|camp located|studio located|venue|american heritage|patriot arena)/,
+      [
+        { type: "events", icon: "map-pin", label: "View Venue" },
+        { type: "email", icon: "mail", label: "Ask Staff" }
+      ],
+      venueAnswer()
+    );
+  }
+
+  return {
+    speaker: "agent",
+    title: "I can help with the main parent questions.",
+    body: "Try asking about schedule, pricing, registration, what to bring, safety, payment, location, or trial classes. For anything specific to your student, send staff a note.",
+    actions: defaultAgentActions()
+  };
+}
+
+function faqAgentResponse(title, matcher, actions, fallback = "") {
+  const matches = state.faqs.filter((faq) => matcher.test(`${faq.question} ${faq.answer}`.toLowerCase()));
+  return {
+    speaker: "agent",
+    title,
+    body: matches.length
+      ? matches.map((faq) => `${faq.question}\n${faq.answer}`).join("\n")
+      : fallback || "Staff can answer this directly if the current Q&A does not cover your situation.",
+    actions
+  };
+}
+
+function renderAgentResponse(response) {
+  refs.agentThread.innerHTML = `
+    <article class="agent-message ${response.speaker === "parent" ? "parent-message" : "agent-message-card"}">
+      <div class="agent-avatar" aria-hidden="true"><i data-lucide="bot"></i></div>
+      <div>
+        <strong>${escapeHtml(response.title)}</strong>
+        ${renderAgentBody(response.body)}
+      </div>
+    </article>
+  `;
+  refs.agentActions.innerHTML = renderAgentActions(response.actions || defaultAgentActions());
+  refreshIcons();
+}
+
+function renderAgentBody(body) {
+  return clean(body)
+    .split("\n")
+    .filter(Boolean)
+    .map((line) => `<p>${escapeHtml(line)}</p>`)
+    .join("");
+}
+
+function renderAgentActions(actions) {
+  return actions.map((action) => `
+    <button class="ghost-button" type="button" data-agent-action="${escapeAttr(action.type)}">
+      <i data-lucide="${escapeAttr(action.icon)}"></i>
+      ${escapeHtml(action.label)}
+    </button>
+  `).join("");
+}
+
+function recordAgentQuestion(question, response) {
+  state.agentQuestions = normalizeAgentQuestions([
+    {
+      id: makeId("question"),
+      question,
+      topic: response.title,
+      createdAt: new Date().toISOString()
+    },
+    ...(state.agentQuestions || [])
+  ]).slice(0, AGENT_QUESTION_LIMIT);
+  saveState();
+  if (isAdminAuthed()) renderAdmin();
+}
+
+function defaultAgentActions() {
+  return [
+    { type: "events", icon: "calendar-days", label: "View Camps" },
+    { type: "register", icon: "user-plus", label: "Register" },
+    { type: "trial", icon: "calendar-plus", label: "Request Trial" },
+    { type: "email", icon: "mail", label: "Email Staff" }
+  ];
+}
+
+function handleAgentAction(event) {
+  const button = event.target.closest("[data-agent-action]");
+  if (!button) return;
+  const action = button.dataset.agentAction;
+  if (action === "events") {
+    scrollToSection("#events");
+    return;
+  }
+  if (action === "register") {
+    selectSignupEvent(selectedEventId);
+    scrollToSection("#signup");
+    window.setTimeout(() => refs.signupForm.elements.firstName?.focus(), 250);
+    return;
+  }
+  if (action === "trial") {
+    scrollToSection("#parent-agent");
+    window.setTimeout(() => refs.trialForm.elements.parentName?.focus(), 250);
+    return;
+  }
+  if (action === "email") {
+    window.location.href = staffMailto(`${PROGRAM_NAME} question`, "Hi PatriotJJ team,\n\nI have a question about:\n\n");
+    toast("Opening an email draft.");
+    return;
+  }
+  if (action === "venmo") {
+    window.open(venmoProfileUrl(), "_blank", "noopener,noreferrer");
+  }
+}
+
+async function handleTrialRequest(event) {
+  event.preventDefault();
+  const formData = new FormData(refs.trialForm);
+  const lead = buildTrialLead(formData);
+  state.leads.unshift(lead);
+  selectedLeadId = lead.id;
+  saveState();
+  if (isAdminAuthed()) renderAdmin();
+  refs.trialForm.reset();
+
+  const apiResult = await submitParentAgentLead(lead);
+  lead.crmStatus = apiResult.crmSaved ? "saved" : "local_only";
+  lead.notificationStatus = apiResult.notificationSent ? "staff_notified" : "pending";
+  saveState();
+  if (isAdminAuthed()) renderAdmin();
+  renderAgentResponse({
+    speaker: "agent",
+    title: "Trial request captured.",
+    body: `${lead.recommendation}\nA coach or staff member should confirm availability before participation. Waiver and parent/guardian involvement are required before class.`,
+    actions: [
+      { type: "register", icon: "clipboard-pen-line", label: "Register" },
+      { type: "email", icon: "mail", label: "Email Staff" }
+    ]
+  });
+
+  if (apiResult.ok && apiResult.notificationSent) {
+    toast("Trial request saved and staff notified.");
+    return;
+  }
+
+  window.location.href = staffMailto(`${PROGRAM_NAME} trial class request`, trialLeadEmailBody(lead));
+  toast("Trial request saved locally. Opening staff email draft.");
+}
+
+function buildTrialLead(formData) {
+  const lead = normalizeLeadRecord({
+    id: makeId("lead"),
+    createdAt: new Date().toISOString(),
+    source: "site-parent-agent",
+    intent: "trial_class",
+    parentName: formData.get("parentName"),
+    parentEmail: formData.get("parentEmail"),
+    parentPhone: formData.get("parentPhone"),
+    studentName: formData.get("studentName"),
+    studentAge: formData.get("studentAge"),
+    grade: formData.get("grade"),
+    experience: formData.get("experience"),
+    goals: formData.get("goals"),
+    preferredDate: formData.get("preferredDate"),
+    preferredTime: formData.get("preferredTime"),
+    safetyNotes: formData.get("safetyNotes"),
+    notes: formData.get("notes"),
+    followUpStatus: clean(formData.get("safetyNotes")) ? "needs_coach" : "needs_confirmation",
+    registrationStatus: "lead"
+  });
+  lead.recommendation = recommendNextStep(lead);
+  return lead;
+}
+
+function recommendNextStep(lead) {
+  const band = gradeBand(lead.grade);
+  const age = Number(lead.studentAge);
+  const hasSafetyNote = Boolean(clean(lead.safetyNotes));
+  const experienced = /(wrestling|martial|returning|some)/i.test(lead.experience);
+  if (hasSafetyNote) {
+    return "Recommended next step: coach follow-up or private evaluation before class because a safety or medical note was provided.";
+  }
+  if (experienced) {
+    return "Recommended next step: introductory trial with coach placement review so prior experience can be matched to the right pace.";
+  }
+  if (band === "teen" || age >= 13) {
+    return "Recommended next step: teen class or introductory teen trial.";
+  }
+  if (band === "youth" || (age >= 5 && age <= 12)) {
+    return "Recommended next step: beginner youth class or introductory youth trial.";
+  }
+  return "Recommended next step: staff follow-up to confirm the right age group and class fit.";
+}
+
+function trialLeadEmailBody(lead) {
+  return [
+    "Hi PatriotJJ team,",
+    "",
+    "I would like to request a trial class.",
+    "",
+    `Parent/guardian: ${lead.parentName || "Not provided"}`,
+    `Parent email: ${lead.parentEmail || "Not provided"}`,
+    `Parent phone: ${lead.parentPhone || "Not provided"}`,
+    `Student: ${lead.studentName || "Not provided"}`,
+    `Student age: ${lead.studentAge || "Not provided"}`,
+    `Grade: ${gradeLabel(lead.grade)}`,
+    `Experience: ${lead.experience || "Not provided"}`,
+    `Goal: ${lead.goals || "Not provided"}`,
+    `Preferred date: ${lead.preferredDate || "Not provided"}`,
+    `Preferred time: ${lead.preferredTime || "Not provided"}`,
+    `Safety or medical considerations: ${lead.safetyNotes || "None"}`,
+    `Notes: ${lead.notes || "None"}`,
+    "",
+    lead.recommendation,
+    "",
+    "Please confirm availability.",
+    ""
+  ].join("\n");
+}
+
+async function submitParentAgentLead(lead) {
+  if (!window.fetch || window.location.protocol === "file:") {
+    return { ok: false, crmSaved: false, notificationSent: false };
+  }
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 1400);
+  try {
+    const response = await fetch("/api/parent-agent-lead", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lead }),
+      signal: controller.signal,
+      keepalive: true
+    });
+    if (!response.ok) return { ok: false, crmSaved: false, notificationSent: false };
+    const result = await response.json();
+    return {
+      ok: Boolean(result.ok),
+      crmSaved: Boolean(result.crmSaved),
+      notificationSent: Boolean(result.notificationSent),
+      schedulingUrl: clean(result.schedulingUrl)
+    };
+  } catch {
+    return { ok: false, crmSaved: false, notificationSent: false };
+  } finally {
+    window.clearTimeout(timeout);
+  }
+}
+
+function scheduleAnswer() {
+  const events = activeEvents();
+  if (!events.length) return "No active camp sessions are currently listed. Email staff for the next available session.";
+  return events.map((event) => (
+    `${event.title}: ${event.dateLine} (${event.dayLine}) at ${event.venue}. ${event.tracks.map((track) => `${track.label}: ${track.time}`).join(" | ")}`
+  )).join("\n");
+}
+
+function pricingAnswer() {
+  const events = activeEvents();
+  if (!events.length) return "No active camp pricing is currently listed. Email staff for current availability and pricing.";
+  return events.map((event) => (
+    `${event.title}: ${event.tracks.map((track) => `${track.label} $${Number(track.price || 0)}`).join(" | ")}`
+  )).join("\n");
+}
+
+function venueAnswer() {
+  const venues = [...new Set(activeEvents().map((event) => event.venue).filter(Boolean))];
+  return venues.length
+    ? `Listed venue: ${venues.join(" | ")}. Check the current camp card or email staff if you need drop-off details.`
+    : "Email staff for the current venue and drop-off details.";
+}
+
+function activeEvents() {
+  return state.events.filter((event) => event.active);
+}
+
+function selectSignupEvent(eventId = selectedEventId) {
+  const event = activeEvents().find((item) => item.id === eventId) || getSelectedEvent();
+  if (!event) return;
+  selectedEventId = event.id;
+  refs.signupEvent.value = event.id;
+  renderTrackOptions();
+  updateSignupPrice();
+  renderSignupWaiverPreview();
+  renderEvents();
+  renderEventDetail();
+  renderParentAgent();
+}
+
+function scrollToSection(selector) {
+  const element = $(selector);
+  if (element) element.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function staffMailto(subject, body = "") {
+  const address = clean(state.settings.contactEmail).replace(/[^\w.+@-]/g, "") || "info@patriotjj.com";
+  const params = new URLSearchParams({
+    subject,
+    body
+  });
+  return `mailto:${address}?${params.toString()}`;
 }
 
 function renderEvents() {
@@ -973,10 +1552,7 @@ function renderEventDetail() {
 
   const selectLink = refs.eventDetail.querySelector("[data-select-event]");
   selectLink.addEventListener("click", () => {
-    refs.signupEvent.value = event.id;
-    selectedEventId = event.id;
-    renderTrackOptions();
-    updateSignupPrice();
+    selectSignupEvent(event.id);
   });
   refreshIcons();
 }
@@ -1121,6 +1697,7 @@ function handleSignup(event) {
 
   state.participants.unshift(participant);
   state.payments.unshift(payment);
+  linkLeadToParticipant(participant);
   selectedParticipantId = participant.id;
   saveState();
   renderAdmin();
@@ -1131,6 +1708,26 @@ function handleSignup(event) {
   updateSignupPrice();
   renderSignupWaiverPreview();
   toast("Signup saved. Venmo checkout is ready.");
+}
+
+function linkLeadToParticipant(participant) {
+  const participantEmail = participantContactEmail(participant).toLowerCase();
+  const participantPhone = participantContactPhone(participant).replace(/\D/g, "");
+  const participantName = fullName(participant).toLowerCase();
+  const matchingLead = (state.leads || []).find((lead) => {
+    const leadEmail = clean(lead.parentEmail).toLowerCase();
+    const leadPhone = clean(lead.parentPhone).replace(/\D/g, "");
+    const leadStudent = clean(lead.studentName).toLowerCase();
+    return (
+      (participantEmail && participantEmail === leadEmail) ||
+      (participantPhone && participantPhone === leadPhone) ||
+      (participantName && leadStudent && participantName === leadStudent)
+    );
+  });
+  if (!matchingLead) return;
+  matchingLead.registrationStatus = "registered";
+  matchingLead.followUpStatus = "followed_up";
+  matchingLead.participantId = participant.id;
 }
 
 function openParticipantModal(participantId = "") {
@@ -1247,6 +1844,7 @@ function handleManualParticipantSubmit(event) {
   } else {
     state.participants.unshift(participant);
   }
+  linkLeadToParticipant(participant);
   selectedParticipantId = participant.id;
   saveState();
   renderAdmin();
@@ -1470,8 +2068,12 @@ function approvedReviews() {
   return state.reviews.filter((review) => review.status === "approved");
 }
 
+function isAdminAuthed() {
+  return sessionStorage.getItem("patriotJjAdmin") === "true";
+}
+
 function renderAdminGate() {
-  const isAuthed = sessionStorage.getItem("patriotJjAdmin") === "true";
+  const isAuthed = isAdminAuthed();
   refs.adminSection.classList.toggle("admin-login-mode", !isAuthed);
   refs.adminSection.classList.toggle("admin-dashboard-mode", isAuthed);
   refs.adminLogin.classList.toggle("hidden", isAuthed);
@@ -1496,6 +2098,7 @@ function handleAdminLogin(event) {
 function renderAdmin() {
   renderAdminMetrics();
   renderCrmStatus();
+  renderLeads();
   renderParticipantEventFilter();
   renderParticipants();
   renderPayments();
@@ -1522,12 +2125,160 @@ function renderAdminMetrics() {
   const paid = state.payments.filter((payment) => payment.status === "paid");
   const revenue = paid.reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
   const pending = state.payments.filter((payment) => payment.status !== "paid").length;
+  const leads = state.leads || [];
+  const followUps = leads.filter((lead) => lead.followUpStatus !== "followed_up").length;
+  const trialLeads = leads.filter((lead) => lead.intent === "trial_class").length;
+  const conversionBase = leads.length + state.participants.length;
+  const conversionRate = conversionBase ? Math.round((state.participants.length / conversionBase) * 100) : 0;
+  const revenueOpportunity = leads
+    .filter((lead) => lead.registrationStatus !== "registered")
+    .reduce((sum, lead) => sum + estimatedLeadValue(lead), 0);
+  const youthLeadCount = leads.filter((lead) => gradeBand(lead.grade) === "youth").length;
+  const teenLeadCount = leads.filter((lead) => gradeBand(lead.grade) === "teen").length;
   refs.adminMetrics.innerHTML = `
     <span><strong>${state.participants.length}</strong>Participants</span>
+    <span><strong>${leads.length}</strong>New leads</span>
+    <span><strong>${trialLeads}</strong>Trial requests</span>
+    <span><strong>${followUps}</strong>Follow-ups needed</span>
+    <span><strong>${conversionRate}%</strong>Lead conversion</span>
+    <span><strong>${youthLeadCount}/${teenLeadCount}</strong>Youth / teen leads</span>
+    <span><strong>${state.agentQuestions.length}</strong>Parent questions</span>
+    <span><strong>$${revenueOpportunity.toFixed(0)}</strong>Open opportunity</span>
     <span><strong>$${revenue.toFixed(0)}</strong>Paid revenue</span>
     <span><strong>${pending}</strong>Pending payments</span>
     <span><strong>${state.storeOrders.length}</strong>Store orders</span>
   `;
+}
+
+function renderLeads() {
+  if (!refs.leadsTable || !refs.leadDetail || !refs.agentQuestionLog) return;
+  const leads = (state.leads || []).slice().sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+  refs.leadsTable.innerHTML = leads.length ? leads.map((lead) => `
+    <tr class="clickable-row" data-lead-id="${escapeAttr(lead.id)}">
+      <td><strong>${escapeHtml(lead.parentName || "Parent")}</strong><br>${escapeHtml(lead.parentEmail || lead.parentPhone || "No contact")}</td>
+      <td>${escapeHtml(lead.studentName || "Student")}<br>${escapeHtml(gradeLabel(lead.grade))}${lead.studentAge ? `, age ${escapeHtml(lead.studentAge)}` : ""}</td>
+      <td>${escapeHtml(leadIntentLabel(lead.intent))}</td>
+      <td><span class="status-pill ${leadStatusClass(lead)}">${escapeHtml(followUpLabel(lead.followUpStatus))}</span></td>
+      <td>${escapeHtml(lead.parentPhone || "N/A")}</td>
+      <td>${formatDateTime(lead.createdAt)}</td>
+    </tr>
+  `).join("") : `<tr><td colspan="6">No parent leads captured yet.</td></tr>`;
+
+  if (!leads.some((lead) => lead.id === selectedLeadId)) {
+    selectedLeadId = leads[0]?.id || "";
+  }
+  renderLeadDetail();
+  renderAgentQuestionLog();
+}
+
+function renderLeadDetail() {
+  const lead = (state.leads || []).find((item) => item.id === selectedLeadId);
+  if (!lead) {
+    refs.leadDetail.innerHTML = "<p>Select a lead to view trial details and follow-up actions.</p>";
+    return;
+  }
+
+  refs.leadDetail.innerHTML = `
+    <h3>${escapeHtml(lead.parentName || "Parent lead")}</h3>
+    <span class="status-pill ${leadStatusClass(lead)}">${escapeHtml(followUpLabel(lead.followUpStatus))}</span>
+    <dl class="detail-list">
+      <div><dt>Created</dt><dd>${formatDateTime(lead.createdAt)}</dd></div>
+      <div><dt>Intent</dt><dd>${escapeHtml(leadIntentLabel(lead.intent))}</dd></div>
+      <div><dt>Student</dt><dd>${escapeHtml(lead.studentName || "N/A")}</dd></div>
+      <div><dt>Age / grade</dt><dd>${escapeHtml([lead.studentAge ? `Age ${lead.studentAge}` : "", gradeLabel(lead.grade)].filter(Boolean).join(" | "))}</dd></div>
+      <div><dt>Experience</dt><dd>${escapeHtml(lead.experience || "Unknown")}</dd></div>
+      <div><dt>Goal</dt><dd>${escapeHtml(lead.goals || "N/A")}</dd></div>
+      <div><dt>Preferred trial</dt><dd>${escapeHtml([lead.preferredDate, lead.preferredTime].filter(Boolean).join(" | ") || "N/A")}</dd></div>
+      <div><dt>Contact</dt><dd>${escapeHtml([lead.parentEmail, lead.parentPhone].filter(Boolean).join(" | ") || "N/A")}</dd></div>
+      <div><dt>Safety notes</dt><dd>${escapeHtml(lead.safetyNotes || "None")}</dd></div>
+      <div><dt>Recommendation</dt><dd>${escapeHtml(lead.recommendation || recommendNextStep(lead))}</dd></div>
+      <div><dt>CRM / notify</dt><dd>${escapeHtml(lead.crmStatus)} | ${escapeHtml(lead.notificationStatus)}</dd></div>
+      ${lead.notes ? `<div><dt>Notes</dt><dd>${escapeHtml(lead.notes)}</dd></div>` : ""}
+    </dl>
+    <div class="button-row">
+      <a class="ghost-button" href="${staffMailto(`${PROGRAM_NAME} lead follow-up`, trialLeadEmailBody(lead))}">
+        <i data-lucide="mail"></i>
+        Email Staff
+      </a>
+      <a class="secondary-button" href="${parentLeadMailto(lead)}">
+        <i data-lucide="send"></i>
+        Email Parent
+      </a>
+      <button class="primary-button" type="button" data-lead-followed-up="${escapeAttr(lead.id)}">
+        <i data-lucide="check-circle-2"></i>
+        Mark Followed Up
+      </button>
+    </div>
+  `;
+  const followUpButton = refs.leadDetail.querySelector("[data-lead-followed-up]");
+  followUpButton.addEventListener("click", () => markLeadFollowedUp(lead.id));
+  refreshIcons();
+}
+
+function renderAgentQuestionLog() {
+  const rows = (state.agentQuestions || []).slice(0, AGENT_QUESTION_LIMIT);
+  refs.agentQuestionLog.innerHTML = rows.length ? rows.map((question) => `
+    <div class="question-log-row">
+      <span>${escapeHtml(formatDateTime(question.createdAt))}</span>
+      <strong>${escapeHtml(question.topic)}</strong>
+      <p>${escapeHtml(question.question)}</p>
+    </div>
+  `).join("") : `<p class="form-note">Questions asked in the Parent Agent will appear here.</p>`;
+}
+
+function handleLeadTableClick(event) {
+  const row = event.target.closest("[data-lead-id]");
+  if (!row) return;
+  selectedLeadId = row.dataset.leadId;
+  renderLeadDetail();
+}
+
+function markLeadFollowedUp(leadId) {
+  const lead = state.leads.find((item) => item.id === leadId);
+  if (!lead) return;
+  lead.followUpStatus = "followed_up";
+  saveState();
+  renderLeads();
+  renderAdminMetrics();
+  toast("Lead marked followed up.");
+}
+
+function leadIntentLabel(intent) {
+  return LEAD_INTENT_LABELS[intent] || "Parent question";
+}
+
+function followUpLabel(status) {
+  return FOLLOW_UP_LABELS[status] || "Needs follow-up";
+}
+
+function leadStatusClass(lead) {
+  if (lead.followUpStatus === "followed_up") return "active";
+  if (lead.followUpStatus === "needs_coach") return "pending";
+  return "pending";
+}
+
+function estimatedLeadValue(lead) {
+  const band = gradeBand(lead.grade);
+  if (band === "teen") return 200;
+  if (band === "youth") return 150;
+  return 175;
+}
+
+function parentLeadMailto(lead) {
+  const to = encodeURIComponent(lead.parentEmail || "");
+  const subject = encodeURIComponent(`${PROGRAM_NAME} trial class follow-up`);
+  const body = encodeURIComponent([
+    `Hi ${lead.parentName || "there"},`,
+    "",
+    `Thanks for reaching out about ${PROGRAM_NAME}.`,
+    "",
+    lead.recommendation || recommendNextStep(lead),
+    "",
+    "Would you like help confirming a trial class or completing registration?",
+    "",
+    PROGRAM_NAME
+  ].join("\n"));
+  return `mailto:${to}?subject=${subject}&body=${body}`;
 }
 
 function renderParticipantEventFilter() {

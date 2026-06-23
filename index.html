@@ -26,6 +26,7 @@
         </a>
         <nav class="main-nav" aria-label="Primary navigation">
           <a href="#events"><i data-lucide="calendar-days"></i>Camps</a>
+          <a href="#parent-agent"><i data-lucide="bot"></i>Parent Agent</a>
           <a href="about.html"><i data-lucide="users-round"></i>About Us</a>
           <a href="#signup"><i data-lucide="clipboard-pen-line"></i>Signup</a>
           <a href="#store"><i data-lucide="shirt"></i>Store</a>
@@ -114,6 +115,110 @@
           </div>
 
           <aside class="detail-panel" id="event-detail" aria-live="polite"></aside>
+        </section>
+
+        <section class="section parent-agent-section" id="parent-agent">
+          <div class="section-heading parent-agent-heading">
+            <p class="eyebrow">Parent agent</p>
+            <h2>Fast answers for families.</h2>
+            <p>
+              Ask about schedules, pricing, registration, what to bring, safety,
+              payment, or trial classes. The assistant uses the current camp
+              details already on this site.
+            </p>
+          </div>
+
+          <div class="parent-agent-layout">
+            <div class="agent-prompt-panel">
+              <div class="agent-prompt-grid" aria-label="Common parent questions">
+                <button type="button" data-agent-prompt="What are the camp dates and times?">
+                  <i data-lucide="calendar-clock"></i>
+                  Schedule
+                </button>
+                <button type="button" data-agent-prompt="How much does camp cost?">
+                  <i data-lucide="badge-dollar-sign"></i>
+                  Pricing
+                </button>
+                <button type="button" data-agent-prompt="How do I register my student?">
+                  <i data-lucide="clipboard-pen-line"></i>
+                  Register
+                </button>
+                <button type="button" data-agent-prompt="Can we schedule a trial class?">
+                  <i data-lucide="calendar-plus"></i>
+                  Trial Class
+                </button>
+                <button type="button" data-agent-prompt="What should students bring and wear?">
+                  <i data-lucide="shirt"></i>
+                  Gear
+                </button>
+                <button type="button" data-agent-prompt="Is prior experience required?">
+                  <i data-lucide="shield-check"></i>
+                  Safety
+                </button>
+              </div>
+            </div>
+
+            <div class="agent-console" aria-live="polite">
+              <div class="agent-thread" id="agent-thread"></div>
+              <form class="agent-query-form" id="agent-query-form">
+                <label class="sr-only" for="agent-question">Ask a parent question</label>
+                <input
+                  id="agent-question"
+                  name="question"
+                  type="search"
+                  autocomplete="off"
+                  placeholder="Ask about price, schedule, safety, payment..."
+                >
+                <button class="secondary-button" type="submit">
+                  <i data-lucide="send"></i>
+                  Ask
+                </button>
+              </form>
+              <div class="agent-actions" id="agent-actions"></div>
+            </div>
+
+            <form class="trial-form" id="trial-form">
+              <div>
+                <h3>Request a trial class</h3>
+                <p class="form-note">
+                  Captures the lead for staff follow-up. Availability is not final until a coach confirms the time.
+                </p>
+              </div>
+              <div class="form-grid two">
+                <label>Parent/guardian name<input name="parentName" autocomplete="name" required></label>
+                <label>Parent email<input name="parentEmail" type="email" autocomplete="email" required></label>
+                <label>Parent phone<input name="parentPhone" type="tel" autocomplete="tel" required></label>
+                <label>Student name<input name="studentName" autocomplete="given-name" required></label>
+                <label>Student age<input name="studentAge" type="number" min="4" max="19" inputmode="numeric"></label>
+                <label>Grade<input name="grade" autocomplete="off" placeholder="Example: 5th"></label>
+                <label>Experience
+                  <select name="experience">
+                    <option value="Beginner">Beginner</option>
+                    <option value="Some martial arts">Some martial arts</option>
+                    <option value="Wrestling experience">Wrestling experience</option>
+                    <option value="Returning student">Returning student</option>
+                  </select>
+                </label>
+                <label>Main goal
+                  <select name="goals">
+                    <option value="Confidence and discipline">Confidence and discipline</option>
+                    <option value="Fitness and coordination">Fitness and coordination</option>
+                    <option value="Self-defense and bullying prevention">Self-defense and bullying prevention</option>
+                    <option value="Wrestling or martial arts crossover">Wrestling or martial arts crossover</option>
+                    <option value="Positive mentorship">Positive mentorship</option>
+                  </select>
+                </label>
+                <label>Preferred date<input name="preferredDate" type="date"></label>
+                <label>Preferred time<input name="preferredTime" autocomplete="off" placeholder="Example: weekday afternoon"></label>
+              </div>
+              <label>Safety or medical considerations<textarea name="safetyNotes" rows="3" placeholder="Anything a coach should know before participation"></textarea></label>
+              <label>Notes<textarea name="notes" rows="3" placeholder="Questions, scheduling constraints, or anything else helpful"></textarea></label>
+              <button class="primary-button" type="submit">
+                <i data-lucide="calendar-plus"></i>
+                Request Trial
+              </button>
+            </form>
+          </div>
         </section>
 
         <section class="section learning-section">
@@ -384,6 +489,7 @@
             <div class="metric-grid" id="admin-metrics"></div>
 
             <div class="admin-tabs" aria-label="Admin tools">
+              <button class="tab-button" type="button" data-admin-tab="leads"><i data-lucide="user-round-search"></i>Leads</button>
               <button class="tab-button active" type="button" data-admin-tab="participants"><i data-lucide="users"></i>Participants</button>
               <button class="secondary-button" type="button" id="add-participant">
                 <i data-lucide="user-plus"></i>
@@ -394,6 +500,31 @@
               <button class="tab-button" type="button" data-admin-tab="store"><i data-lucide="shirt"></i>Store</button>
               <button class="tab-button" type="button" data-admin-tab="media"><i data-lucide="film"></i>Media</button>
               <button class="tab-button" type="button" data-admin-tab="content"><i data-lucide="messages-square"></i>Content</button>
+            </div>
+
+            <div class="admin-panel" data-panel="leads">
+              <div class="admin-grid">
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Parent</th>
+                        <th>Student</th>
+                        <th>Intent</th>
+                        <th>Follow-up</th>
+                        <th>Contact</th>
+                        <th>Created</th>
+                      </tr>
+                    </thead>
+                    <tbody id="leads-table"></tbody>
+                  </table>
+                </div>
+                <aside class="participant-detail" id="lead-detail"></aside>
+              </div>
+              <div class="workspace-card parent-question-card">
+                <h3>Recent parent questions</h3>
+                <div class="agent-question-log" id="agent-question-log"></div>
+              </div>
             </div>
 
             <div class="admin-panel active" data-panel="participants">

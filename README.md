@@ -16,7 +16,9 @@ Open `index.html` or serve the folder locally. The app includes:
 - Team store with fit, size, quantity, and admin-editable pricing.
 - Realistic team-store product mockups for each item, plus admin image upload, generated item graphics, logo/slogan fields, downloadable mockups, and suggested design ideas.
 - Q&A, reviews, contact links, email link, website link, and Venmo link.
+- Parent Agent section with guided answers from the current schedule, pricing, Q&A, signup, payment, and contact data, plus lead capture, trial-class requests, recommendations, and admin lead metrics.
 - Demo admin login, participant filters, CSV export, participant detail view, payment history, signed waiver view/print, waiver template editor, payment status toggles, event editor, store editor, flyer/brochure editor, media libraries, and 20 starter music tracks.
+- Source-controlled Botpress flow, parent FAQ knowledge base, CRM schema, integration contracts, follow-up templates, and test checklist under `docs/parent-agent`.
 
 ## Demo Admin
 
